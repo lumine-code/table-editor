@@ -46,7 +46,7 @@ describe("delimited text pane item", () => {
     }
     // Let asynchronous native watcher startup observe disposal before its
     // parent directory is removed; otherwise the worker reports a false ENOENT.
-    await timeoutPromise(100);
+    await timeoutPromise(300);
     fs.rmSync(directory, {
       recursive: true,
       force: true,
@@ -83,7 +83,29 @@ describe("delimited text pane item", () => {
     await pollUntil(() => element.querySelector("table-editor-form") != null);
     expect(item.editor).toBeUndefined();
     expect(element.querySelector("table-editor-preview")).not.toBeNull();
-    expect(element.querySelector(".normalization-warning")).toBeNull();
+    expect(
+      element.querySelector(".table-editor-normalization-warning").hidden,
+    ).toBe(true);
+  });
+
+  it("lays out the opening form without legacy absolute positioning", async () => {
+    lumine.config.set("table-editor.showPreview", true);
+    const item = await lumine.workspace.open(filePath);
+    const element = lumine.views.getView(item);
+    await pollUntil(() => element.querySelector("table-editor-form") != null);
+    const form = element.querySelector("table-editor-form");
+    const grid = form.querySelector(".table-editor-settings-grid");
+    const preview = form.querySelector("table-editor-preview");
+    const customDelimiter = form.delimiterCustomField;
+
+    expect(getComputedStyle(form).display).toBe("block");
+    expect(getComputedStyle(grid).display).toBe("grid");
+    expect(getComputedStyle(preview).position).toBe("static");
+    expect(customDelimiter.hidden).toBe(true);
+
+    form.delimiterSelect.value = "custom";
+    form.delimiterSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(customDelimiter.hidden).toBe(false);
   });
 
   it("publishes modified, conflicted, and unmodified file states", async () => {
