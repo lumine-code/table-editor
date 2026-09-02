@@ -37,7 +37,7 @@ consumeTableEditor({ Table, TableEditor }) {
 
 ## Behavior
 
-`Table` mutations executed in a transaction form one undo step. `DisplayTable` owns presentation state and never changes stored row order until `applySort()` is called. `TableEditor` selections use half-open `Range` bounds. `DelimitedTextEditor` implements the Lumine pane-item save, serialization, and `FileState` contracts.
+`Table` mutations executed in a transaction form one undo step. `DisplayTable` owns presentation state and never changes stored row order until `applySort()` is called. `TableEditor` selections use half-open `Range` bounds. `TableEditor` and `DelimitedTextEditor` are center-only pane items; `DelimitedTextEditor` implements the Lumine save, serialization, and `FileState` contracts.
 
 Column presentation options accept `formatCell(value, row, rowIndex)`, which returns plain text, and `paintCell(context, details)`, which draws synchronously inside a clipped Canvas cell. `details` contains `rect`, `value`, `text`, `record`, `row`, `windowRow`, `column`, and `columnDefinition`. HTML renderers are not supported.
 

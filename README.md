@@ -64,6 +64,9 @@ Commands available in `table-editor`:
 - `table-editor:align-left`: align the active column to the left,
 - `table-editor:align-center`: align the active column to the center,
 - `table-editor:align-right`: align the active column to the right,
+- `table-editor:sort-ascending`: sort by the active column in ascending order,
+- `table-editor:sort-descending`: sort by the active column in descending order,
+- `table-editor:clear-sort`: clear the displayed sort order,
 - `table-editor:apply-sort`: make the displayed sort order the stored row order,
 - `table-editor:fit-column-to-content`: resize the active column to its contents,
 - `table-editor:fit-row-to-content`: resize the active row to its contents.
@@ -76,12 +79,13 @@ Tables up to 50,000 rows are the supported interactive performance target. Large
 
 ## Customization
 
-The table can be adjusted from `styles.css` through its root element and Lumine theme variables:
+Canvas-backed tables share the editor's `--data-grid-*` theme tokens. Adjust them globally from `styles.css`, or scope the same declarations to `.table-editor-grid` when only this package should change:
 
 ```css
-table-editor {
-  --table-editor-row-height: 28px;
-  --table-editor-grid-color: var(--base-border-color);
+:root {
+  --data-grid-row-height: 28px;
+  --data-grid-header-height: 28px;
+  --data-grid-border-color: var(--base-border-color);
 }
 ```
 

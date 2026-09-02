@@ -76,6 +76,21 @@ describe("delimited text pane item", () => {
     expect(lumine.workspace.isTextEditor(textItem)).toBe(true);
   });
 
+  it("keeps delimited-text pane items in the workspace center", async () => {
+    const item = await lumine.workspace.open(filePath, { location: "bottom" });
+    await pollUntil(() => item.editor != null);
+    const pane = lumine.workspace.paneForItem(item);
+
+    expect(item.getDefaultLocation()).toBe("center");
+    expect(item.getAllowedLocations()).toEqual(["center"]);
+    expect(item.getIconName).toBeUndefined();
+    expect(pane.getContainer().getLocation()).toBe("center");
+    expect(lumine.workspace.getBottomDock().getPaneItems()).not.toContain(item);
+    expect(
+      lumine.workspace.getBottomDock().getActivePane().isItemAllowed(item),
+    ).toBe(false);
+  });
+
   it("shows the parsing preview before an unremembered choice", async () => {
     lumine.config.set("table-editor.showPreview", true);
     const item = await lumine.workspace.open(filePath);
@@ -115,6 +130,13 @@ describe("delimited text pane item", () => {
     form.delimiterSelect.value = "custom";
     form.delimiterSelect.dispatchEvent(new Event("change", { bubbles: true }));
     expect(customDelimiter.hidden).toBe(false);
+    expect(form.openTableEditorButton.disabled).toBe(true);
+
+    form.delimiterCustomInput.value = ":";
+    form.delimiterCustomInput.dispatchEvent(
+      new Event("input", { bubbles: true }),
+    );
+    await pollUntil(() => !form.openTableEditorButton.disabled);
   });
 
   it("cancels a queued progress paint when the progress view is removed", async () => {
@@ -256,6 +278,62 @@ describe("delimited text pane item", () => {
     );
   });
 
+  it("keeps the original anchor while extending a selection up and left", async () => {
+    const item = await openTable();
+    item.editor.addColumn("third");
+    item.editor.addColumn("fourth");
+    item.editor.addRow(["gamma", "3", "c", "d"]);
+    item.editor.addRow(["delta", "4", "e", "f"]);
+    const tableElement = lumine.views
+      .getView(item)
+      .querySelector("table-editor");
+    const grid = tableElement.grid;
+
+    grid.startSelection({ zone: "body", row: 3, column: 3 });
+    grid.extendSelection({ zone: "body", row: 2, column: 2 }, false);
+    grid.extendSelection({ zone: "body", row: 1, column: 1 }, false);
+
+    expect(grid.normalizedSelections()).toEqual([
+      { r0: 1, c0: 1, r1: 3, c1: 3 },
+    ]);
+    expect(item.editor.getSelectedRange().serialize()).toEqual([
+      [1, 1],
+      [4, 4],
+    ]);
+    expect(item.editor.getCursorScreenPosition().serialize()).toEqual([1, 1]);
+  });
+
+  it("moves the active cell while Shift-arrows extend and shrink from a fixed anchor", async () => {
+    const item = await openTable();
+    const tableElement = lumine.views
+      .getView(item)
+      .querySelector("table-editor");
+    const grid = tableElement.grid;
+    grid.startSelection({ zone: "body", row: 1, column: 1 });
+
+    lumine.commands.dispatch(grid.element, "core:select-up");
+    expect(item.editor.getSelectedRange().serialize()).toEqual([
+      [0, 1],
+      [2, 2],
+    ]);
+    expect(item.editor.getCursorScreenPosition().serialize()).toEqual([0, 1]);
+
+    lumine.commands.dispatch(grid.element, "core:select-left");
+    expect(item.editor.getSelectedRange().serialize()).toEqual([
+      [0, 0],
+      [2, 2],
+    ]);
+    expect(item.editor.getCursorScreenPosition().serialize()).toEqual([0, 0]);
+
+    lumine.commands.dispatch(grid.element, "core:select-right");
+    lumine.commands.dispatch(grid.element, "core:select-down");
+    expect(item.editor.getSelectedRange().serialize()).toEqual([
+      [1, 1],
+      [2, 2],
+    ]);
+    expect(item.editor.getCursorScreenPosition().serialize()).toEqual([1, 1]);
+  });
+
   it("synchronizes canvas selections, variable row sizes, and context zones", async () => {
     const item = await openTable();
     const tableElement = lumine.views
@@ -285,6 +363,57 @@ describe("delimited text pane item", () => {
     );
     expect(tableElement.dataset.contextZone).toBe("row");
     expect(tableElement.contextMenuRow).toBe(0);
+  });
+
+  it("selects headers on click and sorts columns through Alt-click or the context menu", async () => {
+    const item = await openTable();
+    const tableElement = lumine.views
+      .getView(item)
+      .querySelector("table-editor");
+    const grid = tableElement.grid;
+    expect(
+      tableElement.handleCanvasPointerDown(
+        { zone: "column", row: 0, column: 1 },
+        { detail: 1, altKey: false },
+      ),
+    ).toBe(true);
+    grid.startSelection({ zone: "column", row: 0, column: 1 });
+    expect(item.editor.getSelectedRange().serialize()).toEqual([
+      [0, 1],
+      [2, 2],
+    ]);
+    expect(item.editor.order).toBeUndefined();
+
+    expect(grid.requestSort(0, "cycle", "alt-click")).toBe(true);
+    expect(item.editor.order).toBe(0);
+    expect(item.editor.direction).toBe(1);
+
+    tableElement.setContextMenuTarget({ zone: "column", row: 0, column: 1 });
+    lumine.commands.dispatch(tableElement, "table-editor:sort-descending");
+    expect(item.editor.order).toBe(1);
+    expect(item.editor.direction).toBe(-1);
+    lumine.commands.dispatch(tableElement, "table-editor:clear-sort");
+    expect(item.editor.order).toBeNull();
+  });
+
+  it("keeps gutter numbers attached to model rows while sorting", async () => {
+    const item = await openTable();
+    const tableElement = lumine.views
+      .getView(item)
+      .querySelector("table-editor");
+    const rowLabel = (screenRow) =>
+      tableElement.grid.options.formatRowHeader({ windowRow: screenRow });
+
+    expect([rowLabel(0), rowLabel(1)]).toEqual([1, 2]);
+    item.editor.sortBy(0, -1);
+    expect(item.editor.getScreenRows().map((row) => row[0])).toEqual([
+      "beta",
+      "alpha",
+    ]);
+    expect([rowLabel(0), rowLabel(1)]).toEqual([2, 1]);
+
+    item.editor.applySort();
+    expect([rowLabel(0), rowLabel(1)]).toEqual([1, 2]);
   });
 
   it("dispatches clipboard and history commands once from the canvas surface", async () => {

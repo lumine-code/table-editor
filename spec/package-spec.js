@@ -40,4 +40,15 @@ describe("table-editor package", () => {
     expect(css).not.toContain(".tab-bar");
     expect(css).not.toContain("[data-type=");
   });
+
+  it("inherits shared grid visuals and keeps only host layout styles", () => {
+    const css = fs.readFileSync(
+      path.join(__dirname, "..", "styles", "main.css"),
+      "utf8",
+    );
+    expect(css).not.toContain("--canvas-grid-");
+    expect(css).not.toContain("--table-editor-grid-");
+    expect(css).not.toContain(".canvas-grid-viewport");
+    expect(css).not.toContain(".canvas-grid-canvas");
+  });
 });

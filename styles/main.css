@@ -1,40 +1,13 @@
-:root {
-  --table-editor-row-height: 24px;
-  --table-editor-grid-color: var(--base-border-color);
-}
-
 table-editor > .table-editor-grid {
   flex: 1 1 auto;
   width: 100%;
   min-width: 0;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   outline: none;
   user-select: none;
   cursor: cell;
   font-family: var(--editor-font-family);
-  --canvas-grid-row-height: var(--table-editor-row-height);
-  --canvas-grid-header-height: var(--table-editor-row-height);
-  --canvas-grid-text-color: var(--text-color);
-  --canvas-grid-muted-color: var(--text-color-subtle);
-  --canvas-grid-null-color: var(--text-color-subtle);
-  --canvas-grid-border-color: var(--table-editor-grid-color);
-  --canvas-grid-header-color: var(--background-color-highlight);
-  --canvas-grid-accent-color: var(--background-color-info);
-}
-
-table-editor .canvas-grid-viewport {
-  position: sticky;
-  top: 0;
-  left: 0;
-  display: block;
-}
-
-table-editor .canvas-grid-canvas,
-table-editor .canvas-grid-overlay {
-  position: absolute;
-  inset: 0;
-  display: block;
 }
 
 .table-editor-flex-container {

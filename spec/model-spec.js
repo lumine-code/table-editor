@@ -89,11 +89,22 @@ describe("table-editor models", () => {
     first.sortBy(0, 1);
     first.setScreenColumnWidthAt(0, 240);
     expect(first.getScreenRow(0)[0]).toBe("alpha");
+    expect(first.getScreenRows().map((row) => row[0])).toEqual([
+      "alpha",
+      "beta",
+    ]);
     expect(second.getScreenRow(0)[0]).toBe("beta");
     expect(first.getScreenColumnWidthAt(0)).toBe(240);
     expect(second.getScreenColumnWidthAt(0)).toBe(100);
     first.destroy();
     second.destroy();
+  });
+
+  it("limits standalone table editors to the workspace center", () => {
+    const editor = new TableEditor({ table: tableWithData() });
+    expect(editor.getDefaultLocation()).toBe("center");
+    expect(editor.getAllowedLocations()).toEqual(["center"]);
+    editor.destroy();
   });
 
   it("keeps 50,000-row layout and hit-testing within linear setup bounds", () => {

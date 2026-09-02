@@ -96,16 +96,28 @@
       },
       {
         "type": "separator"
+      }
+    ],
+    "table-editor[data-context-zone=\"column\"]": [
+      {
+        "type": "separator"
+      },
+      {
+        "label": "Sort Ascending",
+        "command": "table-editor:sort-ascending"
+      },
+      {
+        "label": "Sort Descending",
+        "command": "table-editor:sort-descending"
+      },
+      {
+        "label": "Clear Sort",
+        "command": "table-editor:clear-sort"
       },
       {
         "label": "Apply Sort",
         "command": "table-editor:apply-sort"
       },
-      {
-        "type": "separator"
-      }
-    ],
-    "table-editor[data-context-zone=\"column\"]": [
       {
         "type": "separator"
       },
