@@ -179,9 +179,9 @@ describe("delimited text pane item", () => {
       frames: 20,
       description: "the virtual table render",
     });
-    expect(
-      tableElement.querySelectorAll("table-editor-cell").length,
-    ).toBeLessThan(1000);
+    expect(tableElement.querySelectorAll("table-editor-cell").length).toBe(0);
+    expect(tableElement.querySelector(".canvas-grid-canvas")).not.toBeNull();
+    expect(tableElement.querySelector(".canvas-grid-overlay")).not.toBeNull();
     expect(item.editor.getRowCount()).toBe(500);
   });
 
@@ -200,19 +200,19 @@ describe("delimited text pane item", () => {
       description: "the table cell render",
     });
 
-    const cell = tableElement.querySelector(
-      'table-editor-cell[data-row="0"][data-column="0"]',
-    );
-    const bounds = cell.getBoundingClientRect();
+    const grid = tableElement.grid;
+    grid.resize(800, 500);
+    const target = grid.element;
+    const bounds = target.getBoundingClientRect();
     const dispatchMouse = (type, buttons) =>
-      cell.dispatchEvent(
+      target.dispatchEvent(
         new MouseEvent(type, {
           bubbles: true,
           cancelable: true,
           button: 0,
           buttons,
-          clientX: bounds.left + bounds.width / 2,
-          clientY: bounds.top + bounds.height / 2,
+          clientX: bounds.left + grid.rowHeaderWidth + 10,
+          clientY: bounds.top + grid.headerHeight + 10,
         }),
       );
 
@@ -223,11 +223,66 @@ describe("delimited text pane item", () => {
     }
     dispatchMouse("dblclick", 0);
 
-    expect(tableElement.dragging).toBe(false);
+    expect(grid.dragging).toBe(false);
     expect(tableElement.isEditing()).toBe(true);
     expect(tableElement.editorElement.matches("lumine-text-editor[mini]")).toBe(
       true,
     );
+  });
+
+  it("synchronizes canvas selections, variable row sizes, and context zones", async () => {
+    const item = await openTable();
+    const tableElement = lumine.views
+      .getView(item)
+      .querySelector("table-editor");
+    const grid = tableElement.grid;
+    grid.resize(800, 500);
+
+    grid.startSelection({ zone: "body", row: 0, column: 0 });
+    grid.extendSelection({ zone: "body", row: 1, column: 1 });
+    expect(item.editor.getSelectedRange().serialize()).toEqual([
+      [0, 0],
+      [2, 2],
+    ]);
+    expect(item.editor.getCursorScreenPosition().serialize()).toEqual([1, 1]);
+
+    grid.setRowSize(1, 36);
+    expect(item.editor.getScreenRowHeightAt(1)).toBe(36);
+
+    const bounds = grid.element.getBoundingClientRect();
+    grid.element.dispatchEvent(
+      new MouseEvent("contextmenu", {
+        bubbles: true,
+        clientX: bounds.left + 4,
+        clientY: bounds.top + grid.headerHeight + 4,
+      }),
+    );
+    expect(tableElement.dataset.contextZone).toBe("row");
+    expect(tableElement.contextMenuRow).toBe(0);
+  });
+
+  it("renames a canvas column header through the native mini editor", async () => {
+    const item = await openTable();
+    const tableElement = lumine.views
+      .getView(item)
+      .querySelector("table-editor");
+    const grid = tableElement.grid;
+    grid.resize(800, 500);
+    const bounds = grid.element.getBoundingClientRect();
+    grid.element.dispatchEvent(
+      new MouseEvent("dblclick", {
+        bubbles: true,
+        detail: 2,
+        clientX: bounds.left + grid.rowHeaderWidth + 10,
+        clientY: bounds.top + grid.headerHeight / 2,
+      }),
+    );
+
+    expect(tableElement.isEditing()).toBe(true);
+    expect(tableElement.editingKind).toBe("column");
+    tableElement.editor.setText("renamed");
+    lumine.commands.dispatch(tableElement.editorElement, "core:confirm");
+    expect(item.editor.getScreenColumn(0).name).toBe("renamed");
   });
 
   it("does not expose a partial table when parsing fails", async () => {

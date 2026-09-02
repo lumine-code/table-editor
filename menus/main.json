@@ -105,7 +105,7 @@
         "type": "separator"
       }
     ],
-    "table-editor-header-cell": [
+    "table-editor[data-context-zone=\"column\"]": [
       {
         "type": "separator"
       },
@@ -129,7 +129,7 @@
         "type": "separator"
       }
     ],
-    "table-editor-gutter-cell": [
+    "table-editor[data-context-zone=\"row\"]": [
       {
         "type": "separator"
       },

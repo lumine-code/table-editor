@@ -96,6 +96,58 @@ describe("table-editor models", () => {
     second.destroy();
   });
 
+  it("keeps 50,000-row layout and hit-testing within linear setup bounds", () => {
+    const rows = Array.from({ length: 50_000 }, (_, row) => [
+      String(row),
+      String(50_000 - row),
+    ]);
+    const table = new Table({ columns: ["left", "right"], rows });
+    const setupStart = performance.now();
+    const display = new DisplayTable({ table });
+    const setupMs = performance.now() - setupStart;
+    expect(setupMs).toBeLessThan(250);
+    expect(display.getScreenRowIndexAtPixelPosition(25_000 * 20 + 1)).toBe(
+      25_000,
+    );
+
+    const resizeStart = performance.now();
+    display.setRowHeightAt(25_000, 36);
+    expect(performance.now() - resizeStart).toBeLessThan(25);
+    expect(display.getScreenRowOffsetAt(25_001)).toBe(25_000 * 20 + 36);
+    display.destroy();
+    table.destroy();
+  });
+
+  it("maps custom stable sorts without searching the sorted rows repeatedly", () => {
+    const table = new Table({
+      columns: ["group", "value"],
+      rows: [
+        ["b", "first"],
+        ["a", "second"],
+        ["b", "third"],
+      ],
+    });
+    const display = new DisplayTable({ table });
+    display.sortBy((left, right) => left[0].localeCompare(right[0]));
+    expect(display.getScreenRows()).toEqual([
+      ["a", "second"],
+      ["b", "first"],
+      ["b", "third"],
+    ]);
+    expect(display.screenToModelRowsMap).toEqual([1, 0, 2]);
+    display.destroy();
+    table.destroy();
+  });
+
+  it("destroys each display model when its editor closes", () => {
+    const table = tableWithData();
+    const editor = new TableEditor({ table });
+    const display = editor.displayTable;
+    editor.destroy();
+    expect(display.isDestroyed()).toBe(true);
+    expect(table.isDestroyed()).toBe(true);
+  });
+
   it("supports rectangular clipboard paste and structural editor commands", () => {
     const table = tableWithData();
     const editor = new TableEditor({ table });

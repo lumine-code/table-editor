@@ -10,7 +10,7 @@ Table Editor opens delimited text through a preview where the delimiter, encodin
 - **Table editing**: edits cells and inserts, removes, resizes, reorders, and aligns rows and columns.
 - **Selections**: supports rectangular and multiple selections with copy, cut, and paste.
 - **History**: groups table operations into undoable transactions and tracks the saved revision.
-- **Large tables**: parses streams incrementally and virtualizes both table axes.
+- **Large tables**: parses streams incrementally and paints only the visible cells on two Canvas layers.
 - **Safe files**: preserves encoding and delimiters, detects external conflicts, and replaces files atomically.
 - **Reusable models**: exposes the table model, display model, editor model, ranges, and file editor as a service.
 
@@ -71,6 +71,8 @@ Commands available in `table-editor`:
 ## Usage
 
 Opening an unremembered file shows a preview. Choose the parsing rules and whether the file should open as text or as a table; the choice can be remembered for that path. Saving preserves the selected encoding, byte-order mark, field delimiter, record delimiter, and final-newline policy. The serializer may normalize redundant quoting. Enabling comment removal or empty-record skipping deliberately omits that ignored syntax from the saved file and is called out in the preview.
+
+Tables up to 50,000 rows are the supported interactive performance target. Larger files are still loaded completely after the configured warning and are never silently truncated, but their memory use and operation latency depend on the document width and cell contents.
 
 ## Customization
 
