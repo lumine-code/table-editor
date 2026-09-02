@@ -1,339 +1,332 @@
 {
-  "name": "tablr",
-  "main": "./lib/tablr",
-  "version": "1.8.3",
-  "description": "Edit CSV files using a table editor",
-  "repository": "https://github.com/abe33/atom-tablr",
+  "name": "table-editor",
+  "author": "lumine-code",
+  "version": "1.0.0",
+  "description": "Edit CSV and TSV files in a structured grid.",
+  "keywords": [
+    "csv",
+    "tsv",
+    "spreadsheet",
+    "grid",
+    "delimiter"
+  ],
+  "repository": "https://github.com/lumine-code/table-editor",
+  "bugs": {
+    "url": "https://github.com/lumine-code/table-editor/issues"
+  },
   "license": "MIT",
+  "main": "./lib/main",
+  "files": [
+    "docs",
+    "keymaps",
+    "lib",
+    "menus",
+    "spec",
+    "styles"
+  ],
   "engines": {
-    "atom": ">=1.12.0"
+    "lumine": "^1.0.0",
+    "node": ">=24"
+  },
+  "backgroundTips": [
+    "Table Editor can copy rectangular selections directly into spreadsheet applications."
+  ],
+  "scripts": {
+    "test": "lumine --test spec",
+    "test:unit": "node --test \"test/*.test.js\"",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "providedServices": {
-    "tablr-models": {
-      "description": "Expose Tablr models to other Atom packages",
+    "table-editor": {
+      "description": "Exposes reusable table models and a delimited-text pane item.",
       "versions": {
-        "1.0.0": "provideTablrModelsServiceV1"
+        "1.0.0": "provideTableEditor"
       }
     }
   },
   "deserializers": {
-    "CSVEditor": "deserializeCSVEditor",
-    "TableEditor": "deserializeTableEditor",
-    "DisplayTable": "deserializeDisplayTable",
-    "Table": "deserializeTable"
+    "table-editor/Table": "deserializeTable",
+    "table-editor/DisplayTable": "deserializeDisplayTable",
+    "table-editor/TableEditor": "deserializeTableEditor",
+    "table-editor/DelimitedTextEditor": "deserializeDelimitedTextEditor"
   },
   "viewProviders": [
-    "tablrViewProvider"
+    "tableEditorViewProvider"
   ],
+  "dependencies": {
+    "csv-parse": "^7.0.2",
+    "csv-stringify": "^6.8.3",
+    "iconv-lite": "^0.7.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.9.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-n": "^18.3.0",
+    "globals": "^17.11.0",
+    "prettier": "^3.9.6"
+  },
   "configSchema": {
     "tableEditor": {
+      "title": "Table Editor",
+      "description": "Presentation and navigation defaults for table surfaces.",
       "type": "object",
       "properties": {
         "undefinedDisplay": {
           "title": "Undefined Value Display",
-          "description": "How to render undefined values in a cell. Leave the field blank to display an empty cell.",
+          "description": "Text shown for an undefined cell value.",
           "type": "string",
           "default": ""
         },
         "pageMoveRowAmount": {
-          "title": "Page Move Row Amount",
-          "description": "The number of rows to jump when using the `core:page-up` and `core:page-down` commands.",
+          "title": "Page Row Step",
+          "description": "Rows moved by page-up and page-down commands.",
           "type": "integer",
+          "minimum": 1,
           "default": 20
         },
         "pageMoveColumnAmount": {
-          "title": "Page Move Column Amount",
-          "description": "The number of columns to jump when using the `tablr:page-left` and `tablr:page-right` commands.",
+          "title": "Page Column Step",
+          "description": "Columns moved by page-left and page-right commands.",
           "type": "integer",
+          "minimum": 1,
           "default": 5
         },
         "scrollSpeedDuringDrag": {
-          "title": "Scroll Speed During Drag",
-          "description": "The speed of the scrolling motion during a drag gesture, in pixels.",
+          "title": "Drag Scroll Speed",
+          "description": "Pixels scrolled per drag-scroll update.",
           "type": "integer",
+          "minimum": 1,
           "default": 20
         },
         "scrollPastEnd": {
           "title": "Scroll Past End",
-          "description": "When enabled, the table can scroll past the end of the table both vertically and horizontally to let manipulate rows and columns more easily.",
+          "description": "Allow blank space after the last row and column.",
           "type": "boolean",
           "default": false
         },
         "rowHeight": {
           "title": "Row Height",
-          "description": "The default row height in pixels.",
+          "description": "Default row height in pixels.",
           "type": "integer",
+          "minimum": 16,
           "default": 24
         },
         "rowOverdraw": {
-          "description": "The number of rows to render outside the bounds of the visible area to smooth the scrolling motion.",
           "title": "Row Overdraw",
+          "description": "Rows rendered outside the visible viewport.",
           "type": "integer",
+          "minimum": 0,
           "default": 3
         },
         "minimumRowHeight": {
           "title": "Minimum Row Height",
-          "description": "The minimum height of a row in pixels.",
+          "description": "Smallest allowed row height in pixels.",
           "type": "integer",
+          "minimum": 8,
           "default": 16
         },
         "rowHeightIncrement": {
           "title": "Row Height Increment",
-          "description": "The amount of pixels to add or remove to a row when using the row resizing commands.",
+          "description": "Pixels added or removed by row-resize commands.",
           "type": "integer",
+          "minimum": 1,
           "default": 20
         },
         "columnWidth": {
           "title": "Column Width",
-          "description": "The default column width in pixels.",
+          "description": "Default column width in pixels.",
           "type": "integer",
+          "minimum": 40,
           "default": 120
         },
         "columnOverdraw": {
           "title": "Column Overdraw",
-          "description": "The number of columns to render outside the bounds of the visible area to smooth the scrolling motion.",
+          "description": "Columns rendered outside the visible viewport.",
           "type": "integer",
+          "minimum": 0,
           "default": 2
         },
         "minimumColumnWidth": {
           "title": "Minimum Column Width",
-          "description": "The minimum column width in pixels.",
+          "description": "Smallest allowed column width in pixels.",
           "type": "integer",
+          "minimum": 20,
           "default": 40
         },
         "columnWidthIncrement": {
           "title": "Column Width Increment",
-          "description": "The amount of pixels to add or remove to a column when using the column resizing commands.",
+          "description": "Pixels added or removed by column-resize commands.",
           "type": "integer",
+          "minimum": 1,
           "default": 20
         }
       }
     },
     "copyPaste": {
+      "title": "Copy and Paste",
+      "description": "How rectangular selections cross the system clipboard.",
       "type": "object",
       "properties": {
         "flattenBufferMultiSelectionOnPaste": {
-          "title": "Flatten Buffer Multi Selection On Paste",
+          "title": "Flatten Text Selections",
+          "description": "Paste text-editor multi-selections as one value.",
           "type": "boolean",
-          "default": false,
-          "description": "If the clipboard content comes from a multiple selection copy in a text editor, the whole clipboard text will be pasted in each cell of the table selection."
+          "default": false
         },
         "distributeBufferMultiSelectionOnPaste": {
-          "title": "Distribute Buffer Multi Selection On Paste",
+          "title": "Distribute Text Selections",
+          "description": "Axis used when distributing text-editor selections.",
           "type": "string",
-          "default": "vertically",
           "enum": [
             "horizontally",
             "vertically"
           ],
-          "description": "If the clipboard content comes from a multiple selection copy in a text editor, each selection will be considered as part of the same column (`vertically`) or of the same row (`horizontally`)."
+          "default": "vertically"
         },
         "treatEachCellAsASelectionWhenPastingToABuffer": {
-          "title": "Treat Each Cell As A Selection When Pasting To A Buffer",
+          "title": "Cells Become Text Selections",
+          "description": "Expose copied cells as separate text-editor selections.",
           "type": "boolean",
-          "default": true,
-          "description": "When copying from a table to paste the content in a text editor this setting will make each cell appear as if they were created from different selections."
+          "default": true
         }
       }
     },
-    "csvEditor": {
+    "delimitedText": {
+      "title": "Delimited Text",
+      "description": "Defaults used while opening and saving delimited text files.",
       "type": "object",
       "properties": {
-        "maximumRowsInPreview": {
+        "previewRows": {
+          "title": "Preview Rows",
+          "description": "Maximum records parsed for the opening preview.",
           "type": "integer",
-          "default": 100,
           "minimum": 1,
-          "description": "The maximum number of rows in the CSV preview. Low numbers can speed up the preview generation but can also lead to error or inconsistencies when parsing the whole file if there is errors past the last row in the preview."
+          "default": 100
         },
-        "tableCreationBatchSize": {
+        "batchSize": {
+          "title": "Table Creation Batch Size",
+          "description": "Records added to the model during one animation frame.",
           "type": "integer",
-          "default": 1000,
           "minimum": 1,
-          "description": "When creating a table from a CSV file, filling the table in one single loop can lock the UI if the table is too large. To prevent that from happening the table is filled in small steps where a number of rows equals to the batch size are added to the table."
+          "default": 1000
         },
-        "columnDelimiter": {
-          "title": "Default Column Delimiter",
-          "description": "The default column delimiter to use when opening a CSV for the first time. You can write space characters code such as `\\t` instead of using the proper character.",
+        "delimiter": {
+          "title": "Default Delimiter",
+          "description": "Field delimiter, or `auto` to detect it from the file.",
           "type": "string",
-          "default": ","
+          "default": "auto"
         },
-        "rowDelimiter": {
-          "title": "Default Row Delimiter",
-          "description": "The default row delimiter to use when opening a CSV for the first time. You can write space characters code such as `\\r` instead of using the proper character. The `auto` value will let the CSV parser determine the proper separator to use depending on the file's content.",
+        "recordDelimiter": {
+          "title": "Default Record Delimiter",
+          "description": "Record delimiter, or `auto` to preserve the detected form.",
           "type": "string",
           "default": "auto"
         },
         "quote": {
-          "title": "Default Quote Character",
-          "description": "The default quote character for quoted content.",
+          "title": "Quote Character",
+          "description": "Character surrounding quoted cell values.",
           "type": "string",
           "default": "\""
         },
         "escape": {
-          "title": "Default Escape Character",
-          "description": "The default escape character for escaped quotes in quoted content.",
+          "title": "Escape Character",
+          "description": "Character escaping quotes inside quoted values.",
           "type": "string",
           "default": "\""
         },
-        "comment": {
-          "title": "Default Comment Character",
-          "description": "The default character that indicate a comment. Everything past this character in a line will be ignored. You can set it to `none` to disable the use of comments.",
+        "commentPrefix": {
+          "title": "Comment Prefix",
+          "description": "Prefix for ignored comment records; empty disables comments.",
           "type": "string",
-          "default": "#"
+          "default": ""
         },
-        "quoted": {
-          "title": "Quoted Content",
-          "description": "Whether the column's content are wrapped into quotes or not.",
+        "quoteAll": {
+          "title": "Quote Every Cell",
+          "description": "Write every cell as a quoted value.",
           "type": "boolean",
           "default": false
         },
         "header": {
-          "title": "File Header",
-          "description": "Whether to treat the first line of a CSV as the file header or not.",
+          "title": "First Record Is a Header",
+          "description": "Use the first parsed record as column names.",
           "type": "boolean",
           "default": false
         },
-        "eof": {
-          "title": "Ensure New Line At End Of File",
-          "description": "When checked, every file will be saved with an extra new-line character at the end of the file.",
-          "type": "boolean",
-          "default": false
+        "endOfFileNewline": {
+          "title": "End-of-File Newline",
+          "description": "Whether saving preserves, adds, or removes the final newline.",
+          "type": "string",
+          "enum": [
+            "preserve",
+            "always",
+            "never"
+          ],
+          "default": "preserve"
         },
         "skipEmptyLines": {
-          "title": "Skip Empty Lines",
-          "description": "When checked, empty lines will simply be ignored.",
+          "title": "Skip Empty Records",
+          "description": "Ignore empty records; ignored records are not written back.",
           "type": "boolean",
           "default": false
         },
         "trim": {
-          "title": "Trim Cell Content",
-          "description": "How to treat cell's content when parsing a CSV file.",
+          "title": "Trim Cell Values",
+          "description": "Whitespace removed around unquoted cell values.",
           "type": "string",
-          "default": "no",
           "enum": [
             "no",
             "left",
             "right",
             "both"
-          ]
+          ],
+          "default": "no"
         },
         "encoding": {
           "title": "Default Encoding",
-          "description": "The default encoding to use when opening a new CSV file.",
+          "description": "Encoding used when no byte-order mark is present.",
           "type": "string",
-          "default": "UTF-8",
-          "enum": [
-            "UTF-8",
-            "UTF-16 LE",
-            "UTF-16 BE",
-            "Western (Windows 1252)",
-            "Western (ISO 8859-1)",
-            "Western (ISO 8859-3)",
-            "Western (ISO 8859-15)",
-            "Western (Mac Roman)",
-            "DOS (CP 437)",
-            "Arabic (Windows 1256)",
-            "Arabic (ISO 8859-6)",
-            "Baltic (Windows 1257)",
-            "Baltic (ISO 8859-4)",
-            "Celtic (ISO 8859-14)",
-            "Central European (Windows 1250)",
-            "Central European (ISO 8859-2)",
-            "Cyrillic (Windows 1251)",
-            "Cyrillic (CP 866)",
-            "Cyrillic (ISO 8859-5)",
-            "Cyrillic (KOI8-R)",
-            "Cyrillic (KOI8-U)",
-            "Estonian (ISO 8859-13)",
-            "Greek (Windows 1253)",
-            "Greek (ISO 8859-7)",
-            "Hebrew (Windows 1255)",
-            "Hebrew (ISO 8859-8)",
-            "Nordic (ISO 8859-10)",
-            "Romanian (ISO 8859-16)",
-            "Turkish (Windows 1254)",
-            "Turkish (ISO 8859-9)",
-            "Vietnamese (Windows 1254)",
-            "Chinese (GBK)",
-            "Chinese (GB18030)",
-            "Traditional Chinese (Big5)",
-            "Traditional Chinese (Big5-HKSCS)",
-            "Japanese (Shift JIS)",
-            "Japanese (EUC-JP)",
-            "Korean (EUC-KR)"
-          ]
+          "default": "utf8"
+        },
+        "largeFileWarningMB": {
+          "title": "Large File Warning",
+          "description": "File size in megabytes that requires confirmation before loading.",
+          "type": "integer",
+          "minimum": 0,
+          "default": 256
         }
       }
     },
-    "supportedCsvExtensions": {
+    "supportedExtensions": {
+      "title": "Supported Extensions",
+      "description": "Case-insensitive file extensions opened by Table Editor.",
       "type": "array",
+      "items": {
+        "type": "string"
+      },
       "default": [
         "csv",
-        "tsv",
-        "CSV",
-        "TSV"
-      ],
-      "description": "The extensions for which the CSV opener will be used."
+        "tsv"
+      ]
     },
-    "disablePreview": {
-      "title": "Disable preview",
-      "description": "When checked, preview will not be presented.",
+    "showPreview": {
+      "title": "Show Opening Preview",
+      "description": "Show parsing options and a record preview for unremembered files.",
       "type": "boolean",
-      "default": false
+      "default": true
     },
-    "defaultColumnNamingMethod": {
+    "columnNaming": {
+      "title": "Generated Column Names",
+      "description": "Naming method used when the file has no header record.",
       "type": "string",
-      "default": "alphabetic",
       "enum": [
         "alphabetic",
         "numeric",
-        "numericZeroBased"
+        "numeric-zero-based"
       ],
-      "description": "When file has no header, select the default naming method for the columns. `alphabetic` means use A, B,…, Z, AA, AB… `numeric` is for simple numbers, ie 1, 2… `numericZeroBased` is similar to `numeric`, except that it starts numbering from 0 instead of 1"
+      "default": "alphabetic"
     }
-  },
-  "dependencies": {
-    "atom-utils": "0.9.x",
-    "coffee-script": "1.7.x",
-    "csv": "~0.4.5",
-    "delegato": "1.x",
-    "element-resize-detector": "^1.1.11",
-    "iconv-lite": "~0.4.4",
-    "mixto": "1.x",
-    "property-accessors": "1.x",
-    "underscore-plus": "^1"
-  },
-  "devDependencies": {
-    "fs-plus": "^2.8.1",
-    "standard": "^8.6.0",
-    "temp": "~0.8.0"
-  },
-  "standard": {
-    "globals": [
-      "advanceClock",
-      "atom",
-      "beforeEach",
-      "afterEach",
-      "expect",
-      "describe",
-      "fdescribe",
-      "ffdescribe",
-      "fffdescribe",
-      "xdescribe",
-      "it",
-      "xit",
-      "fit",
-      "ffit",
-      "fffit",
-      "jasmine",
-      "runs",
-      "spyOn",
-      "waits",
-      "waitsFor",
-      "waitsForPromise",
-      "requestAnimationFrame",
-      "HTMLElement",
-      "IntersectionObserver"
-    ]
   }
 }

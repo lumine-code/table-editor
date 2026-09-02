@@ -1,0 +1,145 @@
+{
+  "menu": [
+    {
+      "label": "Packages",
+      "submenu": [
+        {
+          "label": "Table Editor",
+          "submenu": [
+            {
+              "label": "Open as Table",
+              "command": "table-editor:open-as-table"
+            },
+            {
+              "label": "Open as Text",
+              "command": "table-editor:open-as-text"
+            },
+            {
+              "label": "Clear File Choice",
+              "command": "table-editor:clear-file-choice"
+            },
+            {
+              "label": "Clear File Layout",
+              "command": "table-editor:clear-file-layout"
+            },
+            {
+              "label": "Clear File Settings",
+              "command": "table-editor:clear-file-settings"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "context-menu": {
+    "lumine-text-editor:not([mini])": [
+      {
+        "type": "separator"
+      },
+      {
+        "label": "Open as Table",
+        "command": "table-editor:open-as-table"
+      },
+      {
+        "type": "separator"
+      }
+    ],
+    "table-editor": [
+      {
+        "type": "separator"
+      },
+      {
+        "label": "Edit Cell",
+        "command": "core:confirm"
+      },
+      {
+        "label": "Cut",
+        "command": "core:cut"
+      },
+      {
+        "label": "Copy",
+        "command": "core:copy"
+      },
+      {
+        "label": "Paste",
+        "command": "core:paste"
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "label": "Insert Row Before",
+        "command": "table-editor:insert-row-before"
+      },
+      {
+        "label": "Insert Row After",
+        "command": "table-editor:insert-row-after"
+      },
+      {
+        "label": "Delete Rows",
+        "command": "table-editor:delete-row"
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "label": "Insert Column Before",
+        "command": "table-editor:insert-column-before"
+      },
+      {
+        "label": "Insert Column After",
+        "command": "table-editor:insert-column-after"
+      },
+      {
+        "label": "Delete Columns",
+        "command": "table-editor:delete-column"
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "label": "Apply Sort",
+        "command": "table-editor:apply-sort"
+      },
+      {
+        "type": "separator"
+      }
+    ],
+    "table-editor-header-cell": [
+      {
+        "type": "separator"
+      },
+      {
+        "label": "Fit Column to Content",
+        "command": "table-editor:fit-column-to-content"
+      },
+      {
+        "label": "Align Left",
+        "command": "table-editor:align-left"
+      },
+      {
+        "label": "Align Center",
+        "command": "table-editor:align-center"
+      },
+      {
+        "label": "Align Right",
+        "command": "table-editor:align-right"
+      },
+      {
+        "type": "separator"
+      }
+    ],
+    "table-editor-gutter-cell": [
+      {
+        "type": "separator"
+      },
+      {
+        "label": "Fit Row to Content",
+        "command": "table-editor:fit-row-to-content"
+      },
+      {
+        "type": "separator"
+      }
+    ]
+  }
+}

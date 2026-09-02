@@ -1,0 +1,824 @@
+:root {
+  --table-editor-row-height: 24px;
+  --table-editor-grid-color: var(--base-border-color);
+}
+
+.table-editor-flex-container {
+  position: relative;
+  width: 100%;
+  display: -webkit-flex;
+}
+.table-editor-row-number-placeholder {
+  padding: 2px 10px;
+  text-align: right;
+}
+.table-editor-cell {
+  overflow: hidden;
+  height: 100%;
+  padding: 2px 6px;
+  border-right: 1px solid var(--base-border-color);
+  position: absolute;
+  font-size: 1.2em;
+  white-space: pre;
+}
+lumine-pane
+  .tab-bar
+  .tab[data-type="DelimitedTextEditor"]
+  .title[data-path]::before,
+[data-type="DelimitedTextEditor"] .title::before,
+[data-type="TableEditor"] .title::before {
+  font-family: "Octicons Regular";
+  text-align: center;
+  content: "\f062";
+  margin-right: 0.2em;
+  color: var(--text-color-info);
+  position: relative;
+  vertical-align: middle;
+  top: 1px;
+  font-family: "Octicons Regular";
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  line-height: 1em;
+  -webkit-font-smoothing: antialiased;
+  text-decoration: none;
+  font-size: 1.6em !important;
+  width: 1em !important;
+  height: 1em !important;
+}
+table-editor {
+  background: var(--base-background-color);
+  position: relative;
+  -webkit-flex-direction: column;
+  display: -webkit-flex;
+  color: var(--text-color);
+  -webkit-user-select: none;
+}
+table-editor lumine-text-editor[mini].is-focused {
+  border: 1px solid var(--background-color-info);
+  box-shadow: none;
+}
+table-editor lumine-text-editor[mini].is-focused[data-row]::before {
+  background: var(--background-color-info);
+}
+table-editor lumine-text-editor[mini] {
+  position: fixed;
+  margin: 0;
+  border: 1px solid var(--base-border-color);
+  background: var(--base-background-color);
+  box-shadow: 0 5px 10px 3px rgba(0, 0, 0, 0.2);
+  z-index: 3;
+  overflow: visible;
+  opacity: 1;
+  border-radius: 0;
+  max-height: none;
+  height: auto;
+}
+table-editor lumine-text-editor[mini][data-row]::before {
+  content: "#" attr(data-row) " " attr(data-column);
+  position: absolute;
+  top: 0;
+  left: -1px;
+  transform: translate(0, -100%);
+  font-size: 0.7em;
+  background: var(--base-border-color);
+  color: var(--base-background-color);
+  line-height: 1em;
+  padding: 6px 6px;
+}
+table-editor * {
+  box-sizing: border-box;
+}
+table-editor .measuring-cell {
+  overflow: hidden;
+  height: 100%;
+  padding: 2px 6px;
+  border-right: 1px solid var(--base-border-color);
+  font-size: 1.2em;
+  white-space: pre;
+  z-index: -1;
+  height: auto;
+  position: absolute;
+  top: 0;
+  border-bottom: 1px solid transparent;
+}
+table-editor .hidden-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+table-editor.demo {
+  position: absolute;
+}
+table-editor .table-editor-header {
+  top: 0;
+  left: 0;
+  right: 0;
+  border-bottom: none;
+  z-index: 1;
+  flex-direction: column;
+}
+table-editor .table-editor-header,
+table-editor .table-editor-header-content,
+table-editor .table-editor-header-row {
+  position: relative;
+  width: 100%;
+  display: -webkit-flex;
+}
+table-editor .table-editor-header-row {
+  -webkit-flex: 1;
+  cursor: pointer;
+  position: relative;
+  overflow-x: hidden;
+}
+table-editor .table-editor-header-row::before {
+  overflow: hidden;
+  height: 100%;
+  padding: 2px 6px;
+  border-right: 1px solid var(--base-border-color);
+  position: absolute;
+  font-size: 1.2em;
+  white-space: pre;
+  content: "H";
+  position: relative;
+  visibility: hidden;
+  padding: 3px;
+}
+table-editor .table-editor-header-wrapper {
+  position: absolute;
+  display: block;
+  min-width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+table-editor table-editor-header-cell {
+  overflow: hidden;
+  padding: 2px 6px;
+  border-right: 1px solid var(--base-border-color);
+  position: absolute;
+  font-size: 1.2em;
+  white-space: pre;
+  cursor: s-resize;
+  height: 100%;
+  text-overflow: ellipsis;
+  background: var(--base-background-color);
+}
+table-editor table-editor-header-cell span {
+  white-space: nowrap;
+}
+table-editor table-editor-header-cell.selected {
+  background: var(--base-border-color);
+  border-color: var(--base-background-color);
+}
+table-editor table-editor-header-cell.order {
+  padding-right: 1.5em;
+  cursor: n-resize;
+}
+table-editor table-editor-header-cell.order::after {
+  font-family: "Octicons Regular";
+  content: "\f0a3";
+  display: inline-block;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 1.2em;
+  height: 1.2em;
+  text-align: center;
+  font-size: 1.2em;
+  line-height: 1.2em;
+  margin-top: -10px;
+  z-index: 1;
+}
+table-editor table-editor-header-cell.order.descending {
+  cursor: default;
+}
+table-editor table-editor-header-cell.order.descending::after {
+  content: "\f0a2";
+}
+table-editor table-editor-header-cell.order:hover {
+  padding-right: 6.2em;
+}
+table-editor table-editor-header-cell.order:hover::after {
+  right: 4.8em / 1.2;
+}
+table-editor table-editor-header-cell.order .column-apply-sort-action {
+  display: inline-block;
+}
+table-editor .table-editor-header-filler {
+  padding: 2px 10px;
+  text-align: right;
+}
+table-editor .table-editor-header-filler + * {
+  border-left: 1px solid var(--base-border-color);
+  margin-left: -1px;
+}
+table-editor .column-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  z-index: 2;
+}
+table-editor .column-actions {
+  position: absolute;
+  right: 0.3em;
+  top: 50%;
+  margin-top: -0.8em;
+  font-size: 0.8em;
+  line-height: 1.6em;
+  display: none;
+  z-index: 3;
+}
+table-editor .column-actions button {
+  padding: 0;
+  vertical-align: top;
+  cursor: pointer;
+  display: inline-block;
+  border: none;
+  transition: opacity 0.2s;
+  width: 1.6em;
+  height: 1.6em;
+  text-align: center;
+  font-size: 1em;
+  margin-left: 0.3em;
+  background: var(--background-color-selected);
+  color: var(--text-color);
+}
+table-editor .column-actions button::before {
+  font-family: "Octicons Regular";
+}
+table-editor .column-actions .column-edit-action::before {
+  content: "\f058";
+}
+table-editor .column-actions .column-edit-action::before {
+  content: "\f058";
+}
+table-editor .column-actions .column-apply-sort-action {
+  display: none;
+}
+table-editor .column-actions .column-apply-sort-action::before {
+  content: "\f062";
+  font-size: 1.2em;
+}
+table-editor .column-actions .column-fit-action::before {
+  font-size: 1.2em;
+  content: "\f05f ";
+}
+table-editor table-editor-header-cell:hover {
+  z-index: 3;
+  padding-right: 3.4em;
+}
+table-editor table-editor-header-cell:hover .column-actions {
+  display: block;
+}
+table-editor .table-editor-body {
+  display: -webkit-flex;
+  -webkit-flex: 1;
+  border-top: 1px solid var(--base-border-color);
+  position: relative;
+}
+table-editor .table-editor-content {
+  position: relative;
+  width: 100%;
+  display: -webkit-flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+table-editor .table-editor-gutter {
+  display: -webkit-flex;
+  order: 1;
+  position: relative;
+  cursor: cell;
+  overflow: hidden;
+}
+table-editor .table-editor-gutter-filler,
+table-editor .table-editor-header-filler {
+  visibility: hidden;
+}
+table-editor table-editor-gutter-cell {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  border-bottom: 1px solid var(--base-border-color);
+  border-right: 1px solid var(--base-border-color);
+  pointer-events: none;
+}
+table-editor table-editor-gutter-cell:nth-child(2) {
+  border-top: none;
+}
+table-editor table-editor-gutter-cell.selected {
+  background: var(--base-border-color);
+  border-color: var(--base-background-color);
+}
+table-editor table-editor-gutter-cell.active-row {
+  color: var(--text-color-highlight);
+}
+table-editor table-editor-gutter-cell .row-resize-handle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  cursor: row-resize;
+  pointer-events: auto;
+}
+table-editor table-editor-gutter-cell,
+table-editor .table-editor-gutter-filler {
+  padding: 2px 10px;
+  text-align: right;
+}
+table-editor table-editor-selection {
+  display: block;
+  position: absolute;
+  pointer-events: none;
+  border: 1px solid rgba(2, 119, 189, 0.5);
+  z-index: 2;
+}
+table-editor table-editor-selection .selection-box-handle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  z-index: 2;
+  background: var(--background-color-info);
+  right: -3px;
+  pointer-events: auto;
+  bottom: -3px;
+}
+table-editor table-editor-selection .selection-box-handle:before {
+  content: "";
+  position: absolute;
+  display: block;
+  top: -4px;
+  bottom: -4px;
+  left: -4px;
+  right: -4px;
+  cursor: nwse-resize;
+}
+table-editor .ruler {
+  position: absolute;
+  display: none;
+  min-height: 1px;
+  min-width: 1px;
+  background: var(--background-color-info);
+  z-index: 1;
+}
+table-editor .ruler.visible {
+  display: block;
+}
+table-editor .row-resize-ruler {
+  position: absolute;
+  display: none;
+  min-height: 1px;
+  min-width: 1px;
+  background: var(--background-color-info);
+  z-index: 1;
+  height: 1px;
+  left: 0;
+  right: 0;
+}
+table-editor .row-resize-ruler.visible {
+  display: block;
+}
+table-editor .column-resize-ruler {
+  position: absolute;
+  display: none;
+  min-height: 1px;
+  min-width: 1px;
+  background: var(--background-color-info);
+  z-index: 1;
+  width: 1px;
+  top: 0;
+  bottom: 0;
+}
+table-editor .column-resize-ruler.visible {
+  display: block;
+}
+table-editor .table-editor-rows {
+  width: 100%;
+  display: -webkit-flex;
+  position: relative;
+  order: 2;
+  -webkit-flex: 1;
+  overflow: auto;
+  height: 100%;
+  background: var(--base-background-color);
+}
+table-editor .table-editor-rows-wrapper {
+  position: absolute;
+  display: block;
+  min-width: 100%;
+  cursor: cell;
+}
+table-editor .ellipsis-display {
+  overflow: hidden;
+  height: 100%;
+  padding: 2px 6px;
+  border-right: 1px solid var(--base-border-color);
+  position: absolute;
+  white-space: pre;
+  height: auto;
+  position: fixed;
+  background: #243442;
+  color: var(--text-color-highlight);
+  font-size: 1.2em;
+  pointer-events: none;
+  white-space: pre-wrap;
+}
+table-editor .ellipsis-display:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  border: 1px solid rgba(2, 119, 189, 0.5);
+}
+table-editor table-editor-cell,
+table-editor table-editor-header-cell,
+table-editor table-editor-gutter-cell,
+table-editor .table-editor-gutter-filler,
+table-editor .table-editor-header-filler {
+  font-size: 1.2em;
+}
+table-editor table-editor-cell {
+  overflow: hidden;
+  height: 100%;
+  padding: 2px 6px;
+  border-right: 1px solid var(--base-border-color);
+  position: absolute;
+  font-size: 1.2em;
+  white-space: pre;
+  border-bottom: 1px solid var(--base-border-color);
+  background: var(--base-background-color);
+}
+table-editor table-editor-cell.ellipsis::after {
+  content: "\f09a";
+  font-family: "Octicons Regular";
+  color: var(--text-color);
+  display: inline-block;
+  background: var(--base-background-color);
+  font-size: 1.6em;
+  line-height: 0.4em;
+  position: absolute;
+  padding: 0.1em;
+  border-radius: 0.2em;
+  right: 0.2em;
+  bottom: 0.2em;
+}
+table-editor table-editor-cell.active.ellipsis::after {
+  color: var(--background-color-info);
+}
+table-editor .active-row {
+  background: rgba(46, 125, 50, 0.25);
+}
+table-editor .order {
+  background: rgba(2, 119, 189, 0.25);
+}
+table-editor .active-column {
+  background: rgba(211, 47, 47, 0.25);
+}
+table-editor .active-column.order {
+  background: rgba(125, 94, 133, 0.51);
+}
+table-editor table-editor-header-cell.active-column {
+  color: var(--text-color-highlight);
+  background: var(--base-border-color);
+}
+table-editor table-editor-cell.selected {
+  background: var(--base-border-color);
+  border-color: var(--base-background-color);
+}
+table-editor table-editor-cell.active {
+  background: rgba(2, 119, 189, 0.1);
+  color: var(--text-color-highlight);
+}
+table-editor table-editor-cell.active:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  border: 1px solid rgba(2, 119, 189, 0.5);
+}
+lumine-pane-container
+  lumine-pane
+  .item-views
+  table-editor-delimited-text.pane-item {
+  color: var(--text-color);
+  background: var(--base-background-color);
+}
+table-editor-delimited-text {
+  position: relative;
+}
+table-editor-delimited-text table-editor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+table-editor-delimited-text table-editor-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  padding-bottom: 140px;
+}
+table-editor-delimited-text table-editor-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--base-background-color);
+}
+table-editor-delimited-text table-editor-progress .wrapper {
+  min-width: 200px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+table-editor-delimited-text table-editor-progress .bytes {
+  float: right;
+}
+table-editor-delimited-text table-editor-progress progress {
+  width: 100%;
+}
+table-editor-delimited-text table-editor-preview {
+  display: block;
+  height: 140px;
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+table-editor-delimited-text table-editor-preview .table-wrapper {
+  max-height: 120px;
+  overflow: auto;
+  border-radius: 3px;
+  border: 1px solid var(--base-background-color);
+}
+table-editor-delimited-text table-editor-preview .alert {
+  display: inline-block;
+  margin-top: 20px;
+}
+table-editor-delimited-text table-editor-preview table {
+  min-width: 100%;
+  background: var(--base-border-color);
+}
+table-editor-delimited-text table-editor-preview table th,
+table-editor-delimited-text table-editor-preview table td {
+  text-align: left;
+  padding: 0.6em 10px;
+  font-size: 1.2em;
+  padding: 0.3em 0.6em;
+  border-right: 1px solid var(--base-background-color);
+  border-bottom: 1px solid var(--base-background-color);
+}
+table-editor-delimited-text table-editor-preview table th:last-child,
+table-editor-delimited-text table-editor-preview table td:last-child {
+  border-right: none;
+}
+table-editor-delimited-text table-editor-preview table tr:last-child td {
+  border-bottom: none;
+}
+table-editor-delimited-text table-editor-preview table th {
+  color: var(--text-color);
+}
+table-editor-delimited-text table-editor-preview table td {
+  color: var(--text-color);
+}
+table-editor-delimited-text .alert {
+  margin-top: 20px;
+}
+table-editor-delimited-text .settings-view {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 20px;
+}
+table-editor-delimited-text .settings-view .settings-panel {
+  position: relative;
+}
+table-editor-delimited-text .settings-view .settings-panel > .setting-title {
+  font-size: 1.4em;
+  margin-top: 20px;
+}
+table-editor-delimited-text
+  .settings-view
+  .settings-panel
+  > .setting-title:first-child {
+  font-size: 2em;
+}
+table-editor-delimited-text .settings-view .settings-panel > .controls label {
+  margin: 10px 0;
+}
+table-editor-delimited-text
+  .settings-view
+  .settings-panel
+  > .controls
+  label
+  .setting-title {
+  color: var(--text-color);
+}
+table-editor-delimited-text .settings-view label * {
+  display: inline-block;
+}
+table-editor-delimited-text .settings-view .editor-choices {
+  display: flex;
+  flex-direction: row;
+}
+table-editor-delimited-text .settings-view .text-editor {
+  position: relative;
+}
+table-editor-delimited-text .settings-view .text-editor::before {
+  content: "";
+  height: 100%;
+  width: 1px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background-image: linear-gradient(
+    0deg,
+    rgba(75, 82, 99, 0),
+    var(--background-color-selected),
+    rgba(75, 82, 99, 0)
+  );
+}
+table-editor-delimited-text .settings-view .text-editor,
+table-editor-delimited-text .settings-view .table-editor {
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px 0;
+}
+table-editor-delimited-text .settings-view .btn-group {
+  display: flex;
+  flex-direction: row;
+}
+table-editor-delimited-text .settings-view .btn-group .btn {
+  flex: 1 0 0;
+  min-width: -webkit-min-content;
+}
+table-editor-delimited-text .settings-view .split-panel {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-left: -10px;
+  margin-right: -10px;
+}
+table-editor-delimited-text .settings-view .split-panel .panel {
+  padding: 20px 10px;
+  background: transparent;
+  flex: 1 1 0;
+  width: 33.33%;
+  min-width: 250px;
+}
+table-editor-delimited-text
+  .settings-view
+  .split-panel
+  .controls
+  > label:not(.btn) {
+  padding: 0;
+  padding-right: 20px;
+  margin: 0;
+  color: var(--text-color);
+  white-space: nowrap;
+}
+table-editor-delimited-text .settings-view .control-group {
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+table-editor-delimited-text
+  .settings-view
+  .control-group
+  input[type="checkbox"] {
+  margin-left: 0;
+  margin-right: 0;
+}
+table-editor-delimited-text .settings-view .control-group > .setting-title {
+  flex: 1 1 0;
+  margin: 0;
+  color: var(--text-color);
+}
+table-editor-delimited-text
+  .settings-view
+  .control-group
+  + .control-group.boolean {
+  margin-top: 1.65em;
+}
+table-editor-delimited-text .settings-view .control-group.radios {
+  flex-direction: column;
+  align-items: stretch;
+}
+table-editor-delimited-text
+  .settings-view
+  .control-group.radios
+  .setting-title {
+  line-height: 2em;
+  flex: 1 0;
+}
+table-editor-delimited-text
+  .settings-view
+  .control-group.radios.with-text-editor
+  .controls:last-child {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+table-editor-delimited-text
+  .settings-view
+  .control-group.radios.with-text-editor
+  .controls:first-child {
+  flex-direction: row;
+  display: flex;
+  margin-bottom: 6.66666667px;
+  align-items: center;
+}
+table-editor-delimited-text
+  .settings-view
+  .control-group.radios.with-text-editor
+  .controls:first-child
+  lumine-text-editor {
+  width: 6em;
+  height: 2em;
+}
+table-editor-delimited-text
+  .settings-view
+  .control-group.radios.with-radios-only
+  .setting-title {
+  margin-bottom: 6.66666667px;
+}
+table-editor-delimited-text .settings-view .control-group.select .controls {
+  position: relative;
+  width: 100%;
+}
+table-editor-delimited-text
+  .settings-view
+  .control-group.select
+  .controls
+  label:not(.btn) {
+  line-height: 2em;
+  margin-bottom: 6.66666667px;
+}
+table-editor-delimited-text
+  .settings-view
+  .control-group.select
+  .controls
+  select.form-control {
+  -webkit-appearance: none;
+  font-size: 1em;
+}
+table-editor-delimited-text
+  .settings-view
+  .control-group.select
+  .controls::after {
+  content: "\f05f";
+  font-family: "Octicons Regular";
+  position: absolute;
+  transform: rotate(90deg);
+  display: block;
+  text-align: center;
+  width: 2em;
+  height: 2em;
+  font-size: 1em;
+  bottom: 0;
+  right: 0.5em;
+  color: var(--text-color);
+}
+table-editor-delimited-text .settings-view input[type="radio"] {
+  display: none;
+}
+table-editor-delimited-text .settings-view .quotes .btn,
+table-editor-delimited-text .settings-view .escapes .btn,
+table-editor-delimited-text .settings-view .delimiters .btn {
+  min-width: 30px;
+}
+table-editor-delimited-text .settings-view input:first-child + label {
+  border-radius: 3px 0 0 3px !important;
+}
+table-editor-delimited-text .settings-view input:not(:first-child) + label {
+  border-left: 0 !important;
+}
+table-editor-delimited-text .settings-view input[type="radio"]:checked + label {
+  background: var(--background-color-selected);
+  color: var(--text-color-highlight);
+}
