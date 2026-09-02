@@ -1,0 +1,4 @@
+* text=auto eol=lf
+
+# Encoding and record-delimiter fixtures must keep their exact bytes.
+spec/fixtures/** -text
