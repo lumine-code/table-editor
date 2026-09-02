@@ -107,6 +107,30 @@ describe("table-editor models", () => {
     editor.destroy();
   });
 
+  it("destroys linked cursors and selections exactly once", () => {
+    const editor = new TableEditor({ table: tableWithData() });
+    editor.addCursorAtScreenPosition([1, 1]);
+    const cursors = editor.getCursors().slice();
+    const selections = editor.getSelections().slice();
+    const removedCursors = [];
+    const removedSelections = [];
+    editor.onDidRemoveCursor(({ cursor }) => removedCursors.push(cursor));
+    editor.onDidRemoveSelection(({ selection }) =>
+      removedSelections.push(selection),
+    );
+
+    selections[0].destroy();
+    selections[0].destroy();
+    expect(cursors[0].isDestroyed()).toBe(true);
+    expect(selections[0].isDestroyed()).toBe(true);
+    expect(removedCursors).toEqual([cursors[0]]);
+    expect(removedSelections).toEqual([selections[0]]);
+
+    editor.destroy();
+    expect(cursors.every((cursor) => cursor.isDestroyed())).toBe(true);
+    expect(selections.every((selection) => selection.isDestroyed())).toBe(true);
+  });
+
   it("keeps 50,000-row layout and hit-testing within linear setup bounds", () => {
     const rows = Array.from({ length: 50_000 }, (_, row) => [
       String(row),

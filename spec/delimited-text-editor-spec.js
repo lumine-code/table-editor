@@ -151,7 +151,7 @@ describe("delimited text pane item", () => {
     expect(element.frameRequested).toBe(true);
     element.hideProgress();
     await timeoutPromise(30);
-    expect(element.progress).toBeUndefined();
+    expect(element.progress).toBeNull();
     expect(element.progressFrame).toBeNull();
     expect(element.frameRequested).toBe(false);
   });
@@ -221,9 +221,7 @@ describe("delimited text pane item", () => {
     const tableElement = itemElement.querySelector("table-editor");
     tableElement.style.width = "800px";
     tableElement.style.height = "500px";
-    tableElement.measureHeightAndWidth();
-    tableElement.requestUpdate();
-    await waitForFrames(() => !tableElement.updateRequested, {
+    await waitForFrames(() => tableElement.grid != null, {
       frames: 20,
       description: "the virtual table render",
     });
@@ -231,6 +229,23 @@ describe("delimited text pane item", () => {
     expect(tableElement.querySelector(".canvas-grid-canvas")).not.toBeNull();
     expect(tableElement.querySelector(".canvas-grid-overlay")).not.toBeNull();
     expect(item.editor.getRowCount()).toBe(500);
+  });
+
+  it("tears down the grid adapter with its pane item", async () => {
+    const item = await openTable();
+    const itemElement = lumine.views.getView(item);
+    const tableElement = itemElement.querySelector("table-editor");
+    const adapter = tableElement.gridAdapter;
+    const grid = adapter.grid;
+    const pane = lumine.workspace.paneForItem(item);
+
+    pane.removeItem(item, false);
+    item.destroy();
+
+    expect(adapter.destroyed).toBe(true);
+    expect(grid.destroyed).toBe(true);
+    expect(tableElement.isDestroyed()).toBe(true);
+    expect(tableElement.isConnected).toBe(false);
   });
 
   it("opens the cell editor after a complete double-click gesture", async () => {
@@ -241,9 +256,7 @@ describe("delimited text pane item", () => {
     const tableElement = itemElement.querySelector("table-editor");
     tableElement.style.width = "800px";
     tableElement.style.height = "500px";
-    tableElement.measureHeightAndWidth();
-    tableElement.requestUpdate();
-    await waitForFrames(() => !tableElement.updateRequested, {
+    await waitForFrames(() => tableElement.grid != null, {
       frames: 20,
       description: "the table cell render",
     });
@@ -251,7 +264,7 @@ describe("delimited text pane item", () => {
     const grid = tableElement.grid;
     grid.resize(800, 500);
     const target = grid.element;
-    const bounds = target.getBoundingClientRect();
+    const cell = grid.getCellRect(0, 0);
     const dispatchMouse = (type, buttons) =>
       target.dispatchEvent(
         new MouseEvent(type, {
@@ -259,8 +272,8 @@ describe("delimited text pane item", () => {
           cancelable: true,
           button: 0,
           buttons,
-          clientX: bounds.left + grid.rowHeaderWidth + 10,
-          clientY: bounds.top + grid.headerHeight + 10,
+          clientX: cell.left + 10,
+          clientY: cell.top + 10,
         }),
       );
 
@@ -301,6 +314,25 @@ describe("delimited text pane item", () => {
       [4, 4],
     ]);
     expect(item.editor.getCursorScreenPosition().serialize()).toEqual([1, 1]);
+  });
+
+  it("replaces every previous model selection when a new gesture starts", async () => {
+    const item = await openTable();
+    const tableElement = lumine.views
+      .getView(item)
+      .querySelector("table-editor");
+    const grid = tableElement.grid;
+
+    grid.startSelection({ zone: "body", row: 0, column: 0 });
+    grid.startSelection({ zone: "body", row: 1, column: 1 }, true);
+    expect(item.editor.getSelections().length).toBe(2);
+
+    grid.startSelection({ zone: "body", row: 0, column: 1 });
+    expect(item.editor.getSelections().length).toBe(1);
+    expect(item.editor.getSelectedRange().serialize()).toEqual([
+      [0, 1],
+      [1, 2],
+    ]);
   });
 
   it("moves the active cell while Shift-arrows extend and shrink from a fixed anchor", async () => {
@@ -353,16 +385,54 @@ describe("delimited text pane item", () => {
     grid.setRowSize(1, 36);
     expect(item.editor.getScreenRowHeightAt(1)).toBe(36);
 
-    const bounds = grid.element.getBoundingClientRect();
+    const row = grid.getRowRect(0);
     grid.element.dispatchEvent(
       new MouseEvent("contextmenu", {
         bubbles: true,
-        clientX: bounds.left + 4,
-        clientY: bounds.top + grid.headerHeight + 4,
+        clientX: row.left + 4,
+        clientY: row.top + 4,
       }),
     );
     expect(tableElement.dataset.contextZone).toBe("row");
     expect(tableElement.contextMenuRow).toBe(0);
+  });
+
+  it("fits cells through the public grid measurement facade", async () => {
+    const item = await openTable();
+    const tableElement = lumine.views
+      .getView(item)
+      .querySelector("table-editor");
+    const initialWidth = item.editor.getScreenColumnWidthAt(0);
+    const initialHeight = item.editor.getScreenRowHeightAt(0);
+    item.editor.setValueAtPosition(
+      [0, 0],
+      "a value wide enough to grow the column",
+    );
+    item.editor.setValueAtPosition([0, 1], "first\nsecond\nthird");
+
+    await tableElement.fitColumnToContent(0);
+    await tableElement.fitRowToContent(0);
+
+    expect(item.editor.getScreenColumnWidthAt(0)).toBeGreaterThan(initialWidth);
+    expect(item.editor.getScreenRowHeightAt(0)).toBeGreaterThan(initialHeight);
+  });
+
+  it("updates both resize axes when read-only changes", async () => {
+    const item = await openTable();
+    const tableElement = lumine.views
+      .getView(item)
+      .querySelector("table-editor");
+
+    tableElement.setAttribute("read-only", "");
+    expect(tableElement.grid.setResizable()).toEqual({
+      columns: false,
+      rows: false,
+    });
+    tableElement.removeAttribute("read-only");
+    expect(tableElement.grid.setResizable()).toEqual({
+      columns: true,
+      rows: true,
+    });
   });
 
   it("selects headers on click and sorts columns through Alt-click or the context menu", async () => {
@@ -371,12 +441,6 @@ describe("delimited text pane item", () => {
       .getView(item)
       .querySelector("table-editor");
     const grid = tableElement.grid;
-    expect(
-      tableElement.handleCanvasPointerDown(
-        { zone: "column", row: 0, column: 1 },
-        { detail: 1, altKey: false },
-      ),
-    ).toBe(true);
     grid.startSelection({ zone: "column", row: 0, column: 1 });
     expect(item.editor.getSelectedRange().serialize()).toEqual([
       [0, 1],
@@ -402,7 +466,7 @@ describe("delimited text pane item", () => {
       .getView(item)
       .querySelector("table-editor");
     const rowLabel = (screenRow) =>
-      tableElement.grid.options.formatRowHeader({ windowRow: screenRow });
+      tableElement.gridAdapter.rowLabel(screenRow);
 
     expect([rowLabel(0), rowLabel(1)]).toEqual([1, 2]);
     item.editor.sortBy(0, -1);
@@ -449,13 +513,13 @@ describe("delimited text pane item", () => {
       .querySelector("table-editor");
     const grid = tableElement.grid;
     grid.resize(800, 500);
-    const bounds = grid.element.getBoundingClientRect();
+    const column = grid.getColumnRect(0);
     grid.element.dispatchEvent(
       new MouseEvent("dblclick", {
         bubbles: true,
         detail: 2,
-        clientX: bounds.left + grid.rowHeaderWidth + 10,
-        clientY: bounds.top + grid.headerHeight / 2,
+        clientX: column.left + 10,
+        clientY: column.top + column.height / 2,
       }),
     );
 

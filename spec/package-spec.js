@@ -50,5 +50,53 @@ describe("table-editor package", () => {
     expect(css).not.toContain("--table-editor-grid-");
     expect(css).not.toContain(".canvas-grid-viewport");
     expect(css).not.toContain(".canvas-grid-canvas");
+    for (const legacySelector of [
+      "table-editor-cell",
+      "table-editor-header-cell",
+      "table-editor-gutter-cell",
+      "table-editor-selection",
+      ".table-editor-rows",
+      ".column-resize-ruler",
+    ]) {
+      expect(css).not.toContain(legacySelector);
+    }
+  });
+
+  it("registers native custom element classes without lifecycle wrappers", () => {
+    const DelimitedTextEditorElement = require("../lib/csv-editor-element");
+    const DelimitedTextFormElement = require("../lib/csv-editor-form-element");
+    const PreviewElement = require("../lib/csv-preview-element");
+    const ProgressElement = require("../lib/csv-progress-element");
+    const GoToCellElement = require("../lib/go-to-cell-element");
+    const TableElement = require("../lib/table-element");
+
+    expect(customElements.get("table-editor-delimited-text")).toBe(
+      DelimitedTextEditorElement,
+    );
+    expect(customElements.get("table-editor-form")).toBe(
+      DelimitedTextFormElement,
+    );
+    expect(customElements.get("table-editor-preview")).toBe(PreviewElement);
+    expect(customElements.get("table-editor-progress")).toBe(ProgressElement);
+    expect(customElements.get("table-editor-go-to-cell")).toBe(GoToCellElement);
+    expect(customElements.get("table-editor")).toBe(TableElement);
+    expect(DelimitedTextFormElement.name).toBe("DelimitedTextFormElement");
+    expect(TableElement.name).toBe("TableElement");
+    expect(document.createElement("table-editor-form")).toBeInstanceOf(
+      DelimitedTextFormElement,
+    );
+    expect(
+      document.createElement("table-editor-delimited-text"),
+    ).toBeInstanceOf(DelimitedTextEditorElement);
+    expect(document.createElement("table-editor-progress")).toBeInstanceOf(
+      ProgressElement,
+    );
+    expect(document.createElement("table-editor-preview")).toBeInstanceOf(
+      PreviewElement,
+    );
+    expect(document.createElement("table-editor-go-to-cell")).toBeInstanceOf(
+      GoToCellElement,
+    );
+    expect(document.createElement("table-editor")).toBeInstanceOf(TableElement);
   });
 });
