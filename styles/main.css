@@ -268,7 +268,7 @@ table-editor-delimited-text .table-editor-messages .alert,
 table-editor-delimited-text .table-editor-normalization-warning {
   box-sizing: border-box;
   width: 100%;
-  margin: 0 0 18px;
+  margin: 12px 0 0;
   text-align: left;
 }
 

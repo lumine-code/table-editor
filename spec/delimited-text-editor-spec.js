@@ -117,6 +117,8 @@ describe("delimited text pane item", () => {
     );
     const behavior = form.querySelector(".table-editor-settings-behavior");
     const toggles = form.querySelector(".table-editor-toggle-row");
+    const messages = form.querySelector(".table-editor-messages");
+    const warning = form.querySelector(".table-editor-normalization-warning");
 
     expect(getComputedStyle(form).display).toBe("block");
     expect(getComputedStyle(grid).display).toBe("grid");
@@ -126,6 +128,18 @@ describe("delimited text pane item", () => {
     expect(syntax.contains(form.commentField)).toBe(false);
     expect(toggles.children.length).toBe(3);
     expect(getComputedStyle(toggles).display).toBe("flex");
+    expect(
+      toggles.compareDocumentPosition(messages) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      messages.compareDocumentPosition(warning) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      warning.compareDocumentPosition(preview) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
 
     form.delimiterSelect.value = "custom";
     form.delimiterSelect.dispatchEvent(new Event("change", { bubbles: true }));
