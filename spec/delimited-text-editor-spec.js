@@ -185,6 +185,51 @@ describe("delimited text pane item", () => {
     expect(item.editor.getRowCount()).toBe(500);
   });
 
+  it("opens the cell editor after a complete double-click gesture", async () => {
+    const item = await openTable();
+    const itemElement = lumine.views.getView(item);
+    itemElement.style.width = "800px";
+    itemElement.style.height = "500px";
+    const tableElement = itemElement.querySelector("table-editor");
+    tableElement.style.width = "800px";
+    tableElement.style.height = "500px";
+    tableElement.measureHeightAndWidth();
+    tableElement.requestUpdate();
+    await waitForFrames(() => !tableElement.updateRequested, {
+      frames: 20,
+      description: "the table cell render",
+    });
+
+    const cell = tableElement.querySelector(
+      'table-editor-cell[data-row="0"][data-column="0"]',
+    );
+    const bounds = cell.getBoundingClientRect();
+    const dispatchMouse = (type, buttons) =>
+      cell.dispatchEvent(
+        new MouseEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          button: 0,
+          buttons,
+          clientX: bounds.left + bounds.width / 2,
+          clientY: bounds.top + bounds.height / 2,
+        }),
+      );
+
+    for (let click = 0; click < 2; click++) {
+      dispatchMouse("mousedown", 1);
+      dispatchMouse("mouseup", 0);
+      dispatchMouse("click", 0);
+    }
+    dispatchMouse("dblclick", 0);
+
+    expect(tableElement.dragging).toBe(false);
+    expect(tableElement.isEditing()).toBe(true);
+    expect(tableElement.editorElement.matches("lumine-text-editor[mini]")).toBe(
+      true,
+    );
+  });
+
   it("does not expose a partial table when parsing fails", async () => {
     fs.writeFileSync(filePath, "a,b\n1,2,3\n", "utf8");
     const item = await lumine.workspace.open(filePath);
