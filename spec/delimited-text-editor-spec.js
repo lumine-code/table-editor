@@ -128,6 +128,13 @@ describe("delimited text pane item", () => {
     expect(syntax.contains(form.commentField)).toBe(false);
     expect(toggles.children.length).toBe(3);
     expect(getComputedStyle(toggles).display).toBe("flex");
+    expect(form.querySelector("select")).toBeNull();
+    expect(form.querySelectorAll(".select-box[role='combobox']").length).toBe(
+      5,
+    );
+    expect(form.delimiterSelect.element.getAttribute("aria-label")).toBe(
+      "Field Delimiter",
+    );
     expect(
       toggles.compareDocumentPosition(messages) &
         Node.DOCUMENT_POSITION_FOLLOWING,
@@ -141,8 +148,13 @@ describe("delimited text pane item", () => {
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
 
-    form.delimiterSelect.value = "custom";
-    form.delimiterSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    await form.delimiterSelect.open();
+    const customOption = Array.from(
+      form.delimiterSelect.popup.element.querySelectorAll(".select-box-option"),
+    ).find((option) => option.textContent === "Custom");
+    customOption.click();
+    expect(form.delimiterSelect.value).toBe("custom");
+    expect(form.delimiterSelect.popup).toBeNull();
     expect(customDelimiter.hidden).toBe(false);
     expect(form.openTableEditorButton.disabled).toBe(true);
 

@@ -99,4 +99,19 @@ describe("table-editor package", () => {
     );
     expect(document.createElement("table-editor")).toBeInstanceOf(TableElement);
   });
+
+  it("destroys Lumine select boxes and their open popup with the form", async () => {
+    const DelimitedTextFormElement = require("../lib/csv-editor-form-element");
+    const form = new DelimitedTextFormElement().initialize();
+    document.body.appendChild(form);
+
+    await form.encodingSelect.open();
+    const popup = form.encodingSelect.popup.element;
+    expect(popup.isConnected).toBe(true);
+
+    form.destroy();
+    expect(form.selectBoxes).toEqual([]);
+    expect(popup.isConnected).toBe(false);
+    form.remove();
+  });
 });
