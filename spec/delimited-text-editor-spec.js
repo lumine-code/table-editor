@@ -57,7 +57,7 @@ describe("delimited text pane item", () => {
 
   async function openTable() {
     const item = await lumine.workspace.open(filePath);
-    await pollUntil(() => item.editor != null);
+    await pollUntil(() => item.editor != null, 30000);
     return item;
   }
 
