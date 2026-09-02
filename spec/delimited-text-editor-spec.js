@@ -97,15 +97,41 @@ describe("delimited text pane item", () => {
     const grid = form.querySelector(".table-editor-settings-grid");
     const preview = form.querySelector("table-editor-preview");
     const customDelimiter = form.delimiterCustomField;
+    const syntax = form.querySelector(
+      ".table-editor-settings-column:not(.table-editor-settings-behavior)",
+    );
+    const behavior = form.querySelector(".table-editor-settings-behavior");
+    const toggles = form.querySelector(".table-editor-toggle-row");
 
     expect(getComputedStyle(form).display).toBe("block");
     expect(getComputedStyle(grid).display).toBe("grid");
     expect(getComputedStyle(preview).position).toBe("static");
     expect(customDelimiter.hidden).toBe(true);
+    expect(behavior.contains(form.commentField)).toBe(true);
+    expect(syntax.contains(form.commentField)).toBe(false);
+    expect(toggles.children.length).toBe(3);
+    expect(getComputedStyle(toggles).display).toBe("flex");
 
     form.delimiterSelect.value = "custom";
     form.delimiterSelect.dispatchEvent(new Event("change", { bubbles: true }));
     expect(customDelimiter.hidden).toBe(false);
+  });
+
+  it("cancels a queued progress paint when the progress view is removed", async () => {
+    const item = await openTable();
+    const element = lumine.views.getView(item);
+    element.ensureProgress();
+    element.input = {
+      getProgress: () => ({ total: 100, length: 50, ratio: 0.5 }),
+    };
+    element.lines = 12;
+    element.requestProgressUpdate();
+    expect(element.frameRequested).toBe(true);
+    element.hideProgress();
+    await timeoutPromise(30);
+    expect(element.progress).toBeUndefined();
+    expect(element.progressFrame).toBeNull();
+    expect(element.frameRequested).toBe(false);
   });
 
   it("publishes modified, conflicted, and unmodified file states", async () => {

@@ -55,31 +55,6 @@ table-editor .canvas-grid-overlay {
   font-size: 1.2em;
   white-space: pre;
 }
-lumine-pane
-  .tab-bar
-  .tab[data-type="DelimitedTextEditor"]
-  .title[data-path]::before,
-[data-type="DelimitedTextEditor"] .title::before,
-[data-type="TableEditor"] .title::before {
-  font-family: "Octicons Regular";
-  text-align: center;
-  content: "\f062";
-  margin-right: 0.2em;
-  color: var(--text-color-info);
-  position: relative;
-  vertical-align: middle;
-  top: 1px;
-  font-family: "Octicons Regular";
-  font-weight: normal;
-  font-style: normal;
-  display: inline-block;
-  line-height: 1em;
-  -webkit-font-smoothing: antialiased;
-  text-decoration: none;
-  font-size: 1.6em !important;
-  width: 1em !important;
-  height: 1em !important;
-}
 table-editor {
   background: var(--base-background-color);
   position: relative;
@@ -989,6 +964,21 @@ table-editor-delimited-text .table-editor-checkbox input {
   margin: 0;
 }
 
+table-editor-delimited-text .table-editor-toggle-row {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(16px, 3vw, 36px);
+  min-width: 0;
+  padding-top: 2px;
+}
+
+table-editor-delimited-text .table-editor-toggle-row .table-editor-checkbox {
+  flex: 1 1 0;
+  white-space: nowrap;
+}
+
 table-editor-delimited-text
   .settings-view
   .table-editor-form-panel
@@ -1078,6 +1068,14 @@ table-editor-delimited-text table-editor-preview table th {
     grid-template-columns: minmax(0, 1fr);
     gap: 20px;
   }
+
+  table-editor-delimited-text .table-editor-toggle-row {
+    flex-wrap: wrap;
+  }
+
+  table-editor-delimited-text .table-editor-toggle-row .table-editor-checkbox {
+    flex-basis: calc(50% - 10px);
+  }
 }
 
 @media (max-width: 460px) {
@@ -1088,6 +1086,10 @@ table-editor-delimited-text table-editor-preview table th {
 
   table-editor-delimited-text .table-editor-open-actions .btn {
     width: 100%;
+  }
+
+  table-editor-delimited-text .table-editor-toggle-row .table-editor-checkbox {
+    flex-basis: 100%;
   }
 }
 
@@ -1100,6 +1102,14 @@ table-editor-delimited-text table-editor-preview table th {
     grid-template-columns: minmax(0, 1fr);
     gap: 20px;
   }
+
+  .table-editor-toggle-row {
+    flex-wrap: wrap;
+  }
+
+  .table-editor-toggle-row .table-editor-checkbox {
+    flex-basis: calc(50% - 10px);
+  }
 }
 
 @container (max-width: 460px) {
@@ -1110,5 +1120,9 @@ table-editor-delimited-text table-editor-preview table th {
 
   .table-editor-open-actions .btn {
     width: 100%;
+  }
+
+  .table-editor-toggle-row .table-editor-checkbox {
+    flex-basis: 100%;
   }
 }

@@ -1,3 +1,6 @@
+const fs = require("fs");
+const path = require("path");
+
 describe("table-editor package", () => {
   let mainModule;
 
@@ -27,5 +30,14 @@ describe("table-editor package", () => {
         deserializer: "CSVEditor",
       }),
     ).toBeNull();
+  });
+
+  it("leaves pane and dock tab presentation to core and the active theme", () => {
+    const css = fs.readFileSync(
+      path.join(__dirname, "..", "styles", "main.css"),
+      "utf8",
+    );
+    expect(css).not.toContain(".tab-bar");
+    expect(css).not.toContain("[data-type=");
   });
 });
