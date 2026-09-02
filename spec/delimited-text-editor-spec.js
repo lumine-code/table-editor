@@ -261,6 +261,32 @@ describe("delimited text pane item", () => {
     expect(tableElement.contextMenuRow).toBe(0);
   });
 
+  it("dispatches clipboard and history commands once from the canvas surface", async () => {
+    const item = await openTable();
+    const tableElement = lumine.views
+      .getView(item)
+      .querySelector("table-editor");
+    const grid = tableElement.grid;
+    grid.startSelection({ zone: "body", row: 0, column: 0 });
+    grid.extendSelection({ zone: "body", row: 1, column: 1 });
+
+    lumine.commands.dispatch(grid.element, "core:copy");
+    expect(lumine.clipboard.read().replace(/\r\n/g, "\n")).toBe(
+      "alpha\t1\nbeta\t2",
+    );
+    lumine.clipboard.write("changed");
+    lumine.commands.dispatch(grid.element, "core:paste");
+    expect(item.editor.getRows()).toEqual([
+      ["changed", "changed"],
+      ["changed", "changed"],
+    ]);
+    lumine.commands.dispatch(grid.element, "core:undo");
+    expect(item.editor.getRows()).toEqual([
+      ["alpha", "1"],
+      ["beta", "2"],
+    ]);
+  });
+
   it("renames a canvas column header through the native mini editor", async () => {
     const item = await openTable();
     const tableElement = lumine.views
