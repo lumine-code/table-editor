@@ -216,6 +216,30 @@ describe("delimited text pane item", () => {
     second.destroy();
   });
 
+  it("retargets a moved table without replacing unsaved edits or the shared model", async () => {
+    const item = await openTable();
+    item.editor.setValueAtPosition([0, 1], "unsaved");
+    const table = item.document.table;
+    const target = path.join(directory, "moved.csv");
+    const rename = { oldPath: filePath, newPath: target, isDirectory: false };
+    const move = lumine.workspace.beginFileMove([rename]);
+    fs.renameSync(filePath, target);
+    await move.complete([rename]);
+    expect(item.getPath()).toBe(target);
+    expect(item.document.table).toBe(table);
+    expect(item.editor.getRows()[0][1]).toBe("unsaved");
+    expect(item.getFileState()).toBe(FileState.MODIFIED);
+  });
+
+  it("reconciles an external edit arriving just after its own save", async () => {
+    jasmine.useRealClock();
+    const item = await openTable();
+    await item.save();
+    fs.writeFileSync(filePath, "name;value\r\noutside;7");
+    await pollUntil(() => item.editor.getRows()[0][0] === "outside");
+    expect(item.getFileState()).toBe(FileState.UNMODIFIED);
+  });
+
   it("serializes dirty data with namespaced versioned state", async () => {
     const item = await openTable();
     item.editor.setValueAtPosition([1, 0], "dirty");
