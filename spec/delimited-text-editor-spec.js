@@ -19,6 +19,7 @@ function pollUntil(condition, timeoutMs = 15000) {
 
 describe("delimited text pane item", () => {
   let directory, filePath, mainModule, workspaceElement;
+  let previewReads, fileReadClosures;
 
   beforeEach(async () => {
     directory = fs.realpathSync(
@@ -26,6 +27,24 @@ describe("delimited text pane item", () => {
     );
     filePath = path.join(directory, "sample.csv");
     fs.writeFileSync(filePath, "name;value\r\nalpha;1\r\nbeta;2", "utf8");
+    previewReads = spyOn(
+      DelimitedTextEditor.prototype,
+      "previewCSV",
+    ).and.callThrough();
+    fileReadClosures = [];
+    const createReadStream = fs.createReadStream;
+    spyOn(fs, "createReadStream").and.callFake((readPath, ...args) => {
+      const stream = createReadStream(readPath, ...args);
+      if (
+        typeof readPath === "string" &&
+        readPath.startsWith(directory + path.sep)
+      ) {
+        fileReadClosures.push(
+          new Promise((resolve) => stream.once("close", resolve)),
+        );
+      }
+      return stream;
+    });
     lumine.config.set("table-editor.showPreview", false);
     lumine.config.set("table-editor.delimitedText.header", true);
     lumine.config.set("table-editor.delimitedText.delimiter", "auto");
@@ -44,15 +63,13 @@ describe("delimited text pane item", () => {
       if (pane) await pane.destroyItem(item, true);
       else item.destroy?.();
     }
-    // Let asynchronous native watcher startup observe disposal before its
-    // parent directory is removed; otherwise the worker reports a false ENOENT.
-    await timeoutPromise(300);
-    fs.rmSync(directory, {
-      recursive: true,
-      force: true,
-      maxRetries: 10,
-      retryDelay: 50,
-    });
+    // Superseded previews can still be reading after the latest preview renders.
+    await Promise.allSettled(
+      previewReads.calls.all().map(({ returnValue }) => returnValue),
+    );
+    await Promise.all(fileReadClosures);
+    await lumine.fileWatchClient.settlePendingTeardown();
+    fs.rmSync(directory, { recursive: true, force: true });
   });
 
   async function openTable() {
