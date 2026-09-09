@@ -189,6 +189,7 @@ describe("delimited text pane item", () => {
     item.editor.setValueAtPosition([0, 1], "changed");
     expect(item.getFileState()).toBe(FileState.MODIFIED);
 
+    fs.writeFileSync(filePath, "name;value\r\nexternal;9");
     await item.document.handleDiskChange();
     expect(item.getFileState()).toBe(FileState.CONFLICTED);
 
