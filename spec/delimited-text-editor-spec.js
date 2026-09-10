@@ -240,6 +240,7 @@ describe("delimited text pane item", () => {
     const target = path.join(directory, "moved.csv");
     const rename = { oldPath: filePath, newPath: target, isDirectory: false };
     const move = lumine.workspace.beginFileMove([rename]);
+    await move.ready;
     fs.renameSync(filePath, target);
     await move.complete([rename]);
     expect(item.getPath()).toBe(target);
