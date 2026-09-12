@@ -69,7 +69,12 @@ describe("delimited text pane item", () => {
     );
     await Promise.all(fileReadClosures);
     await lumine.fileWatchClient.settlePendingTeardown();
-    fs.rmSync(directory, { recursive: true, force: true });
+    fs.rmSync(directory, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 50,
+    });
   });
 
   async function openTable() {
