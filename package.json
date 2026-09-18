@@ -329,5 +329,59 @@
       ],
       "default": "alphabetic"
     }
+  },
+  "workspaceOpeners": [
+    {
+      "pathSuffixesConfig": "table-editor.supportedExtensions"
+    }
+  ],
+  "activationCommands": {
+    "lumine-workspace": [
+      "table-editor:add-selection-above",
+      "table-editor:add-selection-below",
+      "table-editor:add-selection-left",
+      "table-editor:add-selection-right",
+      "table-editor:align-center",
+      "table-editor:align-left",
+      "table-editor:align-right",
+      "table-editor:apply-sort",
+      "table-editor:clear-file-choice",
+      "table-editor:clear-file-layout",
+      "table-editor:clear-file-settings",
+      "table-editor:clear-sort",
+      "table-editor:delete-column",
+      "table-editor:delete-row",
+      "table-editor:expand-column",
+      "table-editor:expand-row",
+      "table-editor:fit-column-to-content",
+      "table-editor:fit-row-to-content",
+      "table-editor:go-to-cell",
+      "table-editor:insert-column-after",
+      "table-editor:insert-column-before",
+      "table-editor:insert-row-after",
+      "table-editor:insert-row-before",
+      "table-editor:move-column-left",
+      "table-editor:move-column-right",
+      "table-editor:move-down-in-selection",
+      "table-editor:move-left-in-selection",
+      "table-editor:move-right-in-selection",
+      "table-editor:move-row-down",
+      "table-editor:move-row-up",
+      "table-editor:move-to-end-of-row",
+      "table-editor:move-to-start-of-row",
+      "table-editor:move-up-in-selection",
+      "table-editor:open-as-table",
+      "table-editor:open-as-text",
+      "table-editor:page-left",
+      "table-editor:page-right",
+      "table-editor:select-to-beginning-of-table",
+      "table-editor:select-to-end-of-row",
+      "table-editor:select-to-end-of-table",
+      "table-editor:select-to-start-of-row",
+      "table-editor:shrink-column",
+      "table-editor:shrink-row",
+      "table-editor:sort-ascending",
+      "table-editor:sort-descending"
+    ]
   }
 }
