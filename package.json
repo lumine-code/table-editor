@@ -28,9 +28,6 @@
     "lumine": "^1.0.0",
     "node": ">=24"
   },
-  "backgroundTips": [
-    "Table Editor can copy rectangular selections directly into spreadsheet applications."
-  ],
   "requiresRestartOnUpdate": true,
   "scripts": {
     "test": "lumine --test spec",
@@ -44,6 +41,11 @@
       "description": "Exposes reusable table models and a delimited-text pane item.",
       "versions": {
         "1.0.0": "provideTableEditor"
+      }
+    },
+    "background-tips.provider": {
+      "versions": {
+        "1.0.0": "provideBackgroundTips"
       }
     }
   },
