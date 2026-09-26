@@ -1,6 +1,7 @@
 const Table = require("../lib/table");
 const DisplayTable = require("../lib/display-table");
 const TableEditor = require("../lib/table-editor");
+const DisplayColumn = require("../lib/display-column");
 const Range = require("../lib/range");
 
 describe("table-editor models", () => {
@@ -23,6 +24,10 @@ describe("table-editor models", () => {
     table.initializeAfterSetup();
     return table;
   }
+
+  it("uses the plain-text grammar for columns without a syntax override", () => {
+    expect(new DisplayColumn().grammarScope).toBe("text.plain");
+  });
 
   it("treats ranges as half-open rectangles", () => {
     const range = new Range([1, 2], [4, 6]);

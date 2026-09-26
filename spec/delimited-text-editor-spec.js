@@ -52,6 +52,7 @@ describe("delimited text pane item", () => {
     lumine.config.set("table-editor.delimitedText.encoding", "utf8");
     workspaceElement = lumine.views.getView(lumine.workspace);
     jasmine.attachToDOM(workspaceElement);
+    await lumine.packages.activatePackage("language-text");
     const pkg = await lumine.packages.activatePackage("table-editor");
     mainModule = pkg.mainModule;
     mainModule.filePreferences.clear();
@@ -363,6 +364,25 @@ describe("delimited text pane item", () => {
     expect(tableElement.editorElement.matches("lumine-text-editor[mini]")).toBe(
       true,
     );
+    expect(tableElement.editor.getGrammar().scopeName).toBe("text.plain");
+  });
+
+  it("falls back to Plain Text until a column grammar becomes available", async () => {
+    const item = await openTable();
+    const tableElement = lumine.views
+      .getView(item)
+      .querySelector("table-editor");
+    await pollUntil(() => tableElement.grid != null);
+    item.editor.getScreenColumn(0).grammarScope = "source.json";
+
+    tableElement.startCellEdit();
+    expect(tableElement.editor.getGrammar().scopeName).toBe("text.plain");
+
+    await lumine.packages.activatePackage("language-json");
+    await pollUntil(
+      () => tableElement.editor.getGrammar().scopeName === "source.json",
+    );
+    expect(tableElement.editor.getGrammar().scopeName).toBe("source.json");
   });
 
   it("keeps the original anchor while extending a selection up and left", async () => {
@@ -599,6 +619,7 @@ describe("delimited text pane item", () => {
 
     expect(tableElement.isEditing()).toBe(true);
     expect(tableElement.editingKind).toBe("column");
+    expect(tableElement.editor.getGrammar().scopeName).toBe("text.plain");
     tableElement.editor.setText("renamed");
     lumine.commands.dispatch(tableElement.editorElement, "core:confirm");
     expect(item.editor.getScreenColumn(0).name).toBe("renamed");

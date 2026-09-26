@@ -28,6 +28,10 @@
     "lumine": "^1.0.0",
     "node": ">=24"
   },
+  "specPackages": [
+    "language-json",
+    "language-text"
+  ],
   "requiresRestartOnUpdate": true,
   "scripts": {
     "test": "lumine --test spec",
