@@ -126,6 +126,48 @@ describe("delimited text pane item", () => {
     ).toBe(true);
   });
 
+  it("restores customized sparse layouts and reads legacy array layouts", async () => {
+    const item = await openTable();
+    item.editor.setScreenColumnOptions(1, { width: 180, align: "right" });
+    item.editor.displayTable.setRowHeightAt(1, 48);
+    const state = JSON.parse(JSON.stringify(item.serialize()));
+    expect(state.layout.columns).toEqual({ 1: { width: 180, align: "right" } });
+    expect(state.layout.rowHeights).toEqual({ 1: 48 });
+
+    const restored = mainModule.deserializeDelimitedTextEditor(state);
+    await pollUntil(() => restored.editor != null);
+    expect(restored.editor.getScreenColumnWidthAt(1)).toBe(180);
+    expect(restored.editor.getScreenColumns()[1].align).toBe("right");
+    expect(restored.editor.getRowHeightAt(1)).toBe(48);
+    expect(Array.isArray(restored.editor.displayTable.rowHeights)).toBe(true);
+    restored.destroy();
+
+    state.layout = { columns: [{}, { width: 210 }], rowHeights: [null, 56] };
+    const legacy = mainModule.deserializeDelimitedTextEditor(state);
+    await pollUntil(() => legacy.editor != null);
+    expect(legacy.editor.getScreenColumnWidthAt(1)).toBe(210);
+    expect(legacy.editor.getRowHeightAt(1)).toBe(56);
+    legacy.destroy();
+  });
+
+  it("keeps dirty table content while persisting only row height overrides", async () => {
+    const item = await openTable();
+    item.editor.setValueAtPosition([0, 1], "unsaved");
+    item.editor.setScreenColumnOptions(1, { width: 180, align: "center" });
+    item.editor.displayTable.setRowHeightAt(1, 48);
+    const state = JSON.parse(JSON.stringify(item.serialize()));
+    expect(state.editor.displayTable.rowHeights).toEqual({ 1: 48 });
+
+    const restored = mainModule.deserializeDelimitedTextEditor(state);
+    await pollUntil(() => restored.editor != null);
+    expect(restored.editor.getValueAtPosition([0, 1])).toBe("unsaved");
+    expect(restored.editor.getScreenColumnWidthAt(1)).toBe(180);
+    expect(restored.editor.getScreenColumns()[1].align).toBe("center");
+    expect(restored.editor.getRowHeightAt(1)).toBe(48);
+    expect(restored.isModified()).toBe(true);
+    restored.destroy();
+  });
+
   it("lays out the opening form without legacy absolute positioning", async () => {
     lumine.config.set("table-editor.showPreview", true);
     const item = await lumine.workspace.open(filePath);

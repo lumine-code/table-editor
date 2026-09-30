@@ -75,6 +75,8 @@ Commands available in `table-editor`:
 
 Opening an unremembered file shows a preview. Choose the parsing rules and whether the file should open as text or as a table; the choice can be remembered for that path. Saving preserves the selected encoding, byte-order mark, field delimiter, record delimiter, and final-newline policy. The serializer may normalize redundant quoting. Enabling comment removal or empty-record skipping deliberately omits that ignored syntax from the saved file and is called out in the preview.
 
+Remembered layouts store only customized column widths, alignments, and row heights; unchanged rows and columns add no layout entries to the saved session.
+
 Tables up to 50,000 rows are the supported interactive performance target. Larger files are still loaded completely after the configured warning and are never silently truncated, but their memory use and operation latency depend on the document width and cell contents.
 
 ## Customization
