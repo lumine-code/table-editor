@@ -1,7 +1,6 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { FileState } = require("lumine");
 const DelimitedTextEditor = require("../lib/csv-editor");
 
 function pollUntil(condition, timeoutMs = 15000) {
@@ -252,22 +251,18 @@ describe("delimited text pane item", () => {
     const states = [];
     item.onDidChangeFileState((state) => states.push(state));
     item.editor.setValueAtPosition([0, 1], "changed");
-    expect(item.getFileState()).toBe(FileState.MODIFIED);
+    expect(item.getFileState()).toBe("modified");
 
     fs.writeFileSync(filePath, "name;value\r\nexternal;9");
     await item.document.handleDiskChange();
-    expect(item.getFileState()).toBe(FileState.CONFLICTED);
+    expect(item.getFileState()).toBe("conflicted");
 
     await item.save();
-    expect(item.getFileState()).toBe(FileState.UNMODIFIED);
+    expect(item.getFileState()).toBe("unmodified");
     expect(fs.readFileSync(filePath, "utf8")).toBe(
       "name;value\r\nalpha;changed\r\nbeta;2",
     );
-    expect(states).toEqual([
-      FileState.MODIFIED,
-      FileState.CONFLICTED,
-      FileState.UNMODIFIED,
-    ]);
+    expect(states).toEqual(["modified", "conflicted", "unmodified"]);
   });
 
   it("shares file data but not display state between copied pane items", async () => {
@@ -294,7 +289,7 @@ describe("delimited text pane item", () => {
     expect(item.getPath()).toBe(target);
     expect(item.document.table).toBe(table);
     expect(item.editor.getRows()[0][1]).toBe("unsaved");
-    expect(item.getFileState()).toBe(FileState.MODIFIED);
+    expect(item.getFileState()).toBe("modified");
   });
 
   it("reconciles an external edit arriving just after its own save", async () => {
@@ -303,7 +298,7 @@ describe("delimited text pane item", () => {
     await item.save();
     fs.writeFileSync(filePath, "name;value\r\noutside;7");
     await pollUntil(() => item.editor.getRows()[0][0] === "outside");
-    expect(item.getFileState()).toBe(FileState.UNMODIFIED);
+    expect(item.getFileState()).toBe("unmodified");
   });
 
   it("serializes dirty data with namespaced versioned state", async () => {
@@ -322,7 +317,7 @@ describe("delimited text pane item", () => {
     item.destroy();
     const restored = mainModule.deserializeDelimitedTextEditor(state);
     await pollUntil(() => restored.editor != null);
-    expect(restored.getFileState()).toBe(FileState.MODIFIED);
+    expect(restored.getFileState()).toBe("modified");
     restored.destroy();
   });
 
