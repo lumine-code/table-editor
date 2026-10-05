@@ -32,18 +32,6 @@
     }
   ],
   "context-menu": {
-    "lumine-text-editor:not([mini])": [
-      {
-        "type": "separator"
-      },
-      {
-        "label": "Open as Table",
-        "command": "table-editor:open-as-table"
-      },
-      {
-        "type": "separator"
-      }
-    ],
     "table-editor": [
       {
         "type": "separator"
