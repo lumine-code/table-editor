@@ -322,7 +322,7 @@ table-editor-delimited-text table-editor-preview table th {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--panel-background-color, var(--base-background-color));
+  background: var(--panel-heading-background-color);
   font-weight: 600;
 }
 
