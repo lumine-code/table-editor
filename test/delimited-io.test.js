@@ -5,6 +5,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const test = require("node:test");
+const { Readable } = require("node:stream");
 const iconv = require("iconv-lite");
 const {
   detectDelimiter,
@@ -48,6 +49,83 @@ test("reads quoted multiline records without relaxing inconsistent columns", asy
   await assert.rejects(() =>
     readDelimitedFile(invalidPath, { delimiter: ",", recordDelimiter: "\\n" }),
   );
+});
+
+test("closes the source before returning records or a limited preview", async (t) => {
+  const directory = temporaryDirectory(t);
+  const filePath = path.join(directory, "closed.csv");
+  fs.writeFileSync(filePath, "a,b\n1,2\n", "utf8");
+  const createReadStream = fs.createReadStream;
+  let source;
+  t.mock.method(fs, "createReadStream", (...args) => {
+    source = createReadStream(...args);
+    return source;
+  });
+
+  const result = await readDelimitedFile(filePath);
+  assert.equal(source.closed, true);
+  assert.equal(result.rows.length, 2);
+
+  const preview = await readDelimitedFile(filePath, {}, { limit: 1 });
+  assert.equal(source.closed, true);
+  assert.deepEqual(preview.rows, [["a", "b"]]);
+});
+
+test("closes the source when parsing fails", async (t) => {
+  const directory = temporaryDirectory(t);
+  const filePath = path.join(directory, "invalid.csv");
+  fs.writeFileSync(filePath, "a,b\n1,2,3\n", "utf8");
+  const createReadStream = fs.createReadStream;
+  let source;
+  t.mock.method(fs, "createReadStream", (...args) => {
+    source = createReadStream(...args);
+    return source;
+  });
+
+  await assert.rejects(() => readDelimitedFile(filePath), {
+    code: "CSV_RECORD_INCONSISTENT_FIELDS_LENGTH",
+  });
+  assert.equal(source.closed, true);
+});
+
+test("propagates source read errors and closes the stream", async (t) => {
+  const directory = temporaryDirectory(t);
+  const filePath = path.join(directory, "read-error.csv");
+  fs.writeFileSync(filePath, "a,b\n1,2\n", "utf8");
+  const error = Object.assign(new Error("Read failed"), { code: "EIO" });
+  const source = new Readable({
+    read() {
+      this.destroy(error);
+    },
+  });
+  t.mock.method(fs, "createReadStream", () => source);
+
+  await assert.rejects(() => readDelimitedFile(filePath), error);
+  assert.equal(source.closed, true);
+});
+
+test("closes the source when a read is cancelled after its first record", async (t) => {
+  const directory = temporaryDirectory(t);
+  const filePath = path.join(directory, "cancel-reading.csv");
+  fs.writeFileSync(filePath, "a,b\n1,2\n", "utf8");
+  const controller = new AbortController();
+  const createReadStream = fs.createReadStream;
+  let source;
+  t.mock.method(fs, "createReadStream", (...args) => {
+    source = createReadStream(...args);
+    return source;
+  });
+
+  const result = await readDelimitedFile(
+    filePath,
+    {},
+    {
+      signal: controller.signal,
+      onRecord: () => controller.abort(),
+    },
+  );
+  assert.equal(result, null);
+  assert.equal(source.closed, true);
 });
 
 test("preserves UTF-16 BOM, delimiter, record delimiter, and final newline policy", async (t) => {
