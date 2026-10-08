@@ -2,6 +2,8 @@
 
 Edit CSV and TSV files in a structured grid.
 
+Fork of [abe33/atom-tablr](https://github.com/abe33/atom-tablr).
+
 Table Editor opens delimited text through a preview where the delimiter, encoding, quoting, header, and whitespace rules can be checked before the file becomes an editable table. Parsed data is held in memory while only visible rows and columns are rendered.
 
 ## Features
