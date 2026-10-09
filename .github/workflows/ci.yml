@@ -46,11 +46,21 @@ jobs:
         run: npm pack --dry-run
 
   integration:
-    name: Lumine integration specs
-    runs-on: ubuntu-latest
+    name: Lumine integration specs on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
     env:
       LUMINE_JASMINE_REPORTER: list
+      TEMP: ${{ github.workspace }}/table-spec-tmp
+      TMP: ${{ github.workspace }}/table-spec-tmp
+      TMPDIR: ${{ github.workspace }}/table-spec-tmp
     steps:
       - uses: actions/checkout@v7
         with:
@@ -65,11 +75,14 @@ jobs:
           cache: npm
           cache-dependency-path: lumine/package-lock.json
       - name: Install Linux display and build dependencies
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update || true
           sudo apt-get install -y xvfb libx11-dev libxkbfile-dev libsecret-1-dev
       - name: Use HTTPS for public Git dependencies
         run: git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+      - name: Create private temporary directory
+        run: mkdir -p "$TEMP"
       - name: Install package dependencies
         working-directory: table-editor
         run: npm ci --ignore-scripts
@@ -84,7 +97,15 @@ jobs:
       - name: Rebuild native modules for Electron
         working-directory: lumine
         run: npm run build
+      - name: Install spec dependency packages
+        working-directory: lumine
+        run: node script/install-spec-packages.js --package ../table-editor --home "$RUNNER_TEMP/table-home" --github-env "$GITHUB_ENV"
       - name: Run Jasmine specs
         working-directory: lumine
         timeout-minutes: 20
-        run: xvfb-run --auto-servernum npm start -- --test ../table-editor/spec
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            xvfb-run --auto-servernum npm start -- --test ../table-editor/spec
+          else
+            npm start -- --test ../table-editor/spec
+          fi
