@@ -39,6 +39,8 @@ consumeTableEditor({ Table, TableEditor }) {
 
 `Table` mutations executed in a transaction form one undo step. `DisplayTable` owns presentation state and never changes stored row order until `applySort()` is called. `TableEditor` selections use half-open `Range` bounds. `TableEditor` and `DelimitedTextEditor` are center-only pane items; `DelimitedTextEditor` implements the Lumine save, serialization, and file-state contracts.
 
+Both editors implement `copy({signal})`. Copies share writable table data and document history, with their own display order, column and row layout, cursors, selections, scroll position and DOM. Copying a delimited-text item during a load waits for that load; cancellation ends the copy request without cancelling the source. A preview item copies its current options without starting an additional full-file read.
+
 Column presentation options accept `formatCell(value, row, rowIndex)`, which returns plain text, and `paintCell(context, details)`, which draws synchronously inside a clipped Canvas cell. `details` contains `rect`, `value`, `text`, `record`, `row`, `windowRow`, `column`, and `columnDefinition`. HTML renderers are not supported.
 
 ## Teardown

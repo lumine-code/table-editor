@@ -276,6 +276,43 @@ describe("delimited text pane item", () => {
     second.destroy();
   });
 
+  it("copies a loading item without cancelling the accepted source load", async () => {
+    const original = new DelimitedTextEditor({ filePath });
+    let releaseLoad;
+    const held = new Promise((resolve) => {
+      releaseLoad = resolve;
+    });
+    const load = original.document.load.bind(original.document);
+    spyOn(original.document, "load").and.callFake(async (...args) => {
+      await held;
+      return load(...args);
+    });
+    let copy;
+    try {
+      const opening = original.openTableEditor();
+      const copying = original.copy();
+      const controller = new AbortController();
+      const cancelled = original.copy({ signal: controller.signal });
+      controller.abort();
+      await expectAsync(cancelled).toBeRejected();
+      releaseLoad();
+      await opening;
+      copy = await copying;
+      expect(copy.document).toBe(original.document);
+      expect(copy.editor.table).toBe(original.editor.table);
+      expect(original.document.load).toHaveBeenCalledTimes(1);
+      original.destroy();
+      expect(copy.editor.getRows()).toEqual([
+        ["alpha", "1"],
+        ["beta", "2"],
+      ]);
+    } finally {
+      releaseLoad();
+      copy?.destroy();
+      original.destroy();
+    }
+  });
+
   it("retargets a moved table without replacing unsaved edits or the shared model", async () => {
     const item = await openTable();
     item.editor.setValueAtPosition([0, 1], "unsaved");
