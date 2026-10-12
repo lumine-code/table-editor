@@ -121,6 +121,27 @@ describe("Quoted record delimiter detection", () => {
     }
   });
 
+  if (process.platform === "win32")
+    it("finishes an atomic save with a temporary reader lock while the UI clock is paused", async () => {
+      const text = "name,note\r\nAda,ordinary\r\n";
+      const { editor, filePath } = await openTable(text);
+      expect(editor.getRowCount()).toBe(1);
+      expect(jasmine.isSpy(window.setTimeout)).toBe(true);
+      const rename = fs.promises.rename.bind(fs.promises);
+      let attempts = 0;
+      spyOn(fs.promises, "rename").and.callFake(async (...args) => {
+        if (++attempts === 1)
+          throw Object.assign(new Error("Temporary reader lock"), {
+            code: "EPERM",
+          });
+        return rename(...args);
+      });
+      await item.save();
+      expect(attempts).toBeGreaterThan(1);
+      expect(fs.readFileSync(filePath, "utf8")).toBe(text);
+      expect(item.getFileState()).toBe("unmodified");
+    });
+
   it("ignores escaped quotes and embedded newlines before the first record separator", async () => {
     for (const [text, options, firstCell] of [
       ['"one""\r\ntwo",1\nplain,2\n', {}, 'one"\r\ntwo'],
