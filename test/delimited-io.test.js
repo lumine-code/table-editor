@@ -173,6 +173,82 @@ test("leaves the target untouched and removes temporary files on save failure", 
   assert.deepEqual(fs.readdirSync(directory), ["safe.csv"]);
 });
 
+test("does not retry replacement errors that are not Windows sharing conflicts", async (t) => {
+  const directory = temporaryDirectory(t);
+  const filePath = path.join(directory, "safe.csv");
+  fs.writeFileSync(filePath, "original\n", "utf8");
+  const metadata = await inspectDelimitedFile(filePath, { encoding: "utf8" });
+  const error = Object.assign(new Error("Storage failure"), { code: "EIO" });
+  const rename = t.mock.method(fs.promises, "rename", async () => {
+    throw error;
+  });
+  await assert.rejects(
+    () =>
+      writeDelimitedFileAtomically(filePath, [["replacement"]], {}, metadata),
+    error,
+  );
+  assert.equal(rename.mock.callCount(), 1);
+  assert.equal(fs.readFileSync(filePath, "utf8"), "original\n");
+  assert.deepEqual(fs.readdirSync(directory), ["safe.csv"]);
+});
+
+test(
+  "retries a temporary Windows sharing conflict without rewriting accepted data",
+  { skip: process.platform !== "win32" },
+  async (t) => {
+    const directory = temporaryDirectory(t);
+    const filePath = path.join(directory, "safe.csv");
+    fs.writeFileSync(filePath, "original\n", "utf8");
+    const metadata = await inspectDelimitedFile(filePath, { encoding: "utf8" });
+    const rows = [["accepted"]];
+    const originalRename = fs.promises.rename;
+    const attempts = [];
+    t.mock.method(fs.promises, "rename", async (temporaryPath, target) => {
+      attempts.push([temporaryPath, target]);
+      if (attempts.length <= 3) {
+        assert.equal(fs.readFileSync(filePath, "utf8"), "original\n");
+        rows[0][0] = "changed after encoding";
+        throw Object.assign(new Error("Temporary reader lock"), {
+          code: ["EPERM", "EACCES", "EBUSY"][attempts.length - 1],
+        });
+      }
+      return originalRename(temporaryPath, target);
+    });
+    await writeDelimitedFileAtomically(filePath, rows, {}, metadata);
+    assert.equal(attempts.length, 4);
+    for (const attempt of attempts) assert.deepEqual(attempt, attempts[0]);
+    assert.equal(fs.readFileSync(filePath, "utf8"), "accepted\n");
+    assert.deepEqual(fs.readdirSync(directory), ["safe.csv"]);
+  },
+);
+
+test(
+  "bounds Windows replacement retries and reports the first conflict without removing the target",
+  { skip: process.platform !== "win32" },
+  async (t) => {
+    const directory = temporaryDirectory(t);
+    const filePath = path.join(directory, "safe.csv");
+    fs.writeFileSync(filePath, "original\n", "utf8");
+    const metadata = await inspectDelimitedFile(filePath, { encoding: "utf8" });
+    let firstError;
+    const rename = t.mock.method(fs.promises, "rename", async () => {
+      const error = Object.assign(new Error("Persistent reader lock"), {
+        code: "EPERM",
+      });
+      firstError ||= error;
+      throw error;
+    });
+    await assert.rejects(
+      () =>
+        writeDelimitedFileAtomically(filePath, [["replacement"]], {}, metadata),
+      (error) => error === firstError,
+    );
+    assert.equal(rename.mock.callCount(), 5);
+    assert.equal(fs.readFileSync(filePath, "utf8"), "original\n");
+    assert.deepEqual(fs.readdirSync(directory), ["safe.csv"]);
+  },
+);
+
 test("honors an already-aborted read without returning partial records", async (t) => {
   const directory = temporaryDirectory(t);
   const filePath = path.join(directory, "cancel.csv");
