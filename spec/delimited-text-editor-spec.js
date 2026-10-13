@@ -99,9 +99,19 @@ describe("delimited text pane item", () => {
   });
 
   it("offers Table Editor as the default without loading a table to build the list", () => {
-    expect(lumine.workspace.getAvailableFileOpeners(filePath)).toEqual([
-      { id: "table-editor", label: "Table Editor", isDefault: true },
-      { id: "text-editor", label: "Text Editor", isDefault: false },
+    expect(lumine.workspace.getAvailablePathOpeners(filePath)).toEqual([
+      {
+        id: "table-editor",
+        label: "Table Editor",
+        isDefault: true,
+        destinations: ["current", "new-window", "detached-window"],
+      },
+      {
+        id: "text-editor",
+        label: "Text Editor",
+        isDefault: false,
+        destinations: ["current", "new-window", "detached-window"],
+      },
     ]);
     expect(lumine.workspace.getPaneItems().length).toBe(0);
     expect(previewReads).not.toHaveBeenCalled();
