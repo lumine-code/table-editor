@@ -7,6 +7,7 @@ const path = require("path");
 const test = require("node:test");
 const { Readable } = require("node:stream");
 const iconv = require("iconv-lite");
+const runtime = require("../lib/delimited-runtime");
 const {
   detectDelimiter,
   detectRecordDelimiter,
@@ -259,4 +260,70 @@ test("honors an already-aborted read without returning partial records", async (
     await readDelimitedFile(filePath, {}, { signal: controller.signal }),
     null,
   );
+});
+
+test("does not open a file cancelled while its parser is loading", async (t) => {
+  let finishLoading;
+  const pending = new Promise((resolve) => {
+    finishLoading = resolve;
+  });
+  const parser = await runtime.loadParser();
+  t.mock.method(runtime, "loadParser", () => pending);
+  const opening = t.mock.method(fs.promises, "open");
+  const source = t.mock.method(fs, "createReadStream");
+  const controller = new AbortController();
+  const reading = readDelimitedFile(
+    "cancelled.csv",
+    {},
+    { signal: controller.signal },
+  );
+  controller.abort();
+  finishLoading(parser);
+  assert.equal(await reading, null);
+  assert.equal(opening.mock.callCount(), 0);
+  assert.equal(source.mock.callCount(), 0);
+});
+
+test("does not create a stream when cancelled during file inspection", async (t) => {
+  const directory = temporaryDirectory(t);
+  const filePath = path.join(directory, "cancel.csv");
+  fs.writeFileSync(filePath, "a,b\n1,2\n", "utf8");
+  const controller = new AbortController();
+  const realOpen = fs.promises.open;
+  t.mock.method(fs.promises, "open", async (...args) => {
+    const handle = await realOpen(...args);
+    controller.abort();
+    return handle;
+  });
+  const source = t.mock.method(fs, "createReadStream");
+  assert.equal(
+    await readDelimitedFile(filePath, {}, { signal: controller.signal }),
+    null,
+  );
+  assert.equal(source.mock.callCount(), 0);
+});
+
+test("does not stage a save when the stringifier fails to load and can save on retry", async (t) => {
+  const directory = temporaryDirectory(t);
+  const filePath = path.join(directory, "safe.csv");
+  fs.writeFileSync(filePath, "original\n", "utf8");
+  const metadata = await inspectDelimitedFile(filePath);
+  const actualLoad = runtime.loadStringifier.bind(runtime);
+  let first = true;
+  t.mock.method(runtime, "loadStringifier", () => {
+    if (first) {
+      first = false;
+      return Promise.reject(new Error("Cannot load CSV stringifier"));
+    }
+    return actualLoad();
+  });
+  await assert.rejects(
+    () =>
+      writeDelimitedFileAtomically(filePath, [["replacement"]], {}, metadata),
+    /Cannot load CSV stringifier/,
+  );
+  assert.equal(fs.readFileSync(filePath, "utf8"), "original\n");
+  assert.deepEqual(fs.readdirSync(directory), ["safe.csv"]);
+  await writeDelimitedFileAtomically(filePath, [["replacement"]], {}, metadata);
+  assert.equal(fs.readFileSync(filePath, "utf8"), "replacement\n");
 });
