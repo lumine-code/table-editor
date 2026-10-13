@@ -26,11 +26,8 @@ To install `table-editor` search for it in the Install pane of the Lumine settin
 
 Commands available in `lumine-workspace`:
 
-- `table-editor:open-as-table`: open the active saved text file as a table,
-- `table-editor:open-as-text`: open the active table as ordinary text,
-- `table-editor:clear-file-choice`: forget the remembered opening mode,
 - `table-editor:clear-file-layout`: forget saved column widths and row heights,
-- `table-editor:clear-file-settings`: forget every per-file choice and layout.
+- `table-editor:clear-file-settings`: forget saved parsing options and layout.
 
 Commands available in `table-editor`:
 
@@ -77,7 +74,7 @@ Commands available in `table-editor`:
 
 ## Usage
 
-Opening an unremembered file shows a preview. Choose the parsing rules and whether the file should open as text or as a table; the choice can be remembered for that path. Saving preserves the selected encoding, byte-order mark, field delimiter, record delimiter, and final-newline policy. The serializer may normalize redundant quoting. Enabling comment removal or empty-record skipping deliberately omits that ignored syntax from the saved file and is called out in the preview.
+Opening a file as a table shows its parsing preview when enabled. Choose the parsing rules and confirm Open Table Editor; use Open With… in the tree view to open the same file in Text Editor. Saving preserves the selected encoding, byte-order mark, field delimiter, record delimiter, and final-newline policy. The serializer may normalize redundant quoting. Enabling comment removal or empty-record skipping deliberately omits that ignored syntax from the saved file and is called out in the preview.
 
 Remembered layouts store only customized column widths, alignments, and row heights; unchanged rows and columns add no layout entries to the saved session.
 

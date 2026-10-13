@@ -14,14 +14,12 @@ test("does not persist default layout slots for a million-row table", () => {
     rowHeights: new Array(1_000_000),
   });
   preferences.set(filePath, "options", { delimiter: ";", header: true });
-  preferences.set(filePath, "choice", "TableEditor");
   preferences.set(filePath, "layout", layout);
 
   const state = JSON.parse(JSON.stringify(preferences.serialize()));
   assert.deepEqual(layout, {});
   assert.deepEqual(state.files[filePath], {
     options: { delimiter: ";", header: true },
-    choice: "TableEditor",
   });
   assert.ok(JSON.stringify(state).length < 1000);
 });
@@ -58,8 +56,7 @@ test("migrates old dense array layouts without changing remembered options", () 
     version: 1,
     files: {
       [filePath]: {
-        options: { delimiter: "\t", remember: true },
-        choice: "TextEditor",
+        options: { delimiter: "\t" },
         layout: {
           columns: [{}, { width: 180, align: "left" }, { align: "center" }],
           rowHeights: [null, 36, null, 0],
@@ -70,8 +67,7 @@ test("migrates old dense array layouts without changing remembered options", () 
   const preferences = new FilePreferences(state);
   const migrated = preferences.serialize();
   assert.deepEqual(migrated.files[filePath], {
-    options: { delimiter: "\t", remember: true },
-    choice: "TextEditor",
+    options: { delimiter: "\t" },
     layout: {
       columns: { 1: { width: 180 }, 2: { align: "center" } },
       rowHeights: { 1: 36, 3: 0 },

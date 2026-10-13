@@ -141,21 +141,6 @@ table-editor-delimited-text .table-editor-form-heading {
   text-align: center;
 }
 
-table-editor-delimited-text .table-editor-remember-choice {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: fit-content;
-  margin: 10px auto 0;
-  color: var(--text-color-subtle);
-}
-
-table-editor-delimited-text .table-editor-remember-choice input {
-  flex: none;
-  margin: 0;
-}
-
 table-editor-delimited-text .table-editor-open-actions {
   display: flex;
   flex-wrap: wrap;
@@ -255,12 +240,6 @@ table-editor-delimited-text
   label.table-editor-checkbox
   > input.input-checkbox {
   margin: 0;
-}
-
-table-editor-delimited-text
-  .table-editor-form-panel
-  label.table-editor-remember-choice {
-  margin: 10px auto 0;
 }
 
 table-editor-delimited-text .table-editor-messages:empty {

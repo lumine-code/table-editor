@@ -1,37 +1,11 @@
 {
   "menu": [
     {
-      "label": "View",
-      "submenu": [
-        {
-          "label": "Open View",
-          "submenu": [
-            {
-              "label": "Table",
-              "command": "table-editor:open-as-table"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "label": "Packages",
       "submenu": [
         {
           "label": "Table Editor",
           "submenu": [
-            {
-              "label": "Open as Table",
-              "command": "table-editor:open-as-table"
-            },
-            {
-              "label": "Open as Text",
-              "command": "table-editor:open-as-text"
-            },
-            {
-              "label": "Clear File Choice",
-              "command": "table-editor:clear-file-choice"
-            },
             {
               "label": "Clear File Layout",
               "command": "table-editor:clear-file-layout"

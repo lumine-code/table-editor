@@ -98,6 +98,30 @@ describe("delimited text pane item", () => {
     expect(lumine.workspace.isTextEditor(textItem)).toBe(true);
   });
 
+  it("offers Table Editor as the default without loading a table to build the list", () => {
+    expect(lumine.workspace.getAvailableFileOpeners(filePath)).toEqual([
+      { id: "table-editor", label: "Table Editor", isDefault: true },
+      { id: "text-editor", label: "Text Editor", isDefault: false },
+    ]);
+    expect(lumine.workspace.getPaneItems().length).toBe(0);
+    expect(previewReads).not.toHaveBeenCalled();
+  });
+
+  it("opens and reuses the explicitly selected view independently of another view of the file", async () => {
+    const table = await openTable();
+    const text = await lumine.workspace.open(filePath, {
+      opener: "text-editor",
+    });
+    expect(lumine.workspace.isTextEditor(text)).toBe(true);
+    expect(text).not.toBe(table);
+    expect(
+      await lumine.workspace.open(filePath, { opener: "table-editor" }),
+    ).toBe(table);
+    expect(
+      await lumine.workspace.open(filePath, { opener: "text-editor" }),
+    ).toBe(text);
+  });
+
   it("keeps delimited-text pane items in the workspace center", async () => {
     const item = await lumine.workspace.open(filePath, { location: "bottom" });
     await pollUntil(() => item.editor != null);
@@ -113,7 +137,7 @@ describe("delimited text pane item", () => {
     ).toBe(false);
   });
 
-  it("shows the parsing preview before an unremembered choice", async () => {
+  it("shows parsing settings before opening the table", async () => {
     lumine.config.set("table-editor.showPreview", true);
     const item = await lumine.workspace.open(filePath);
     const element = lumine.views.getView(item);
@@ -123,6 +147,10 @@ describe("delimited text pane item", () => {
     expect(
       element.querySelector(".table-editor-normalization-warning").hidden,
     ).toBe(true);
+    expect(
+      element.querySelector("table-editor-form").openTextEditorButton,
+    ).toBeUndefined();
+    expect(element.querySelector(".table-editor-remember-choice")).toBeNull();
   });
 
   it("restores customized sparse layouts and reads legacy array layouts", async () => {

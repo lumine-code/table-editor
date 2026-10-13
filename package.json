@@ -321,7 +321,7 @@
     },
     "showPreview": {
       "title": "Show Opening Preview",
-      "description": "Show parsing options and a record preview for unremembered files.",
+      "description": "Show parsing options and a record preview before opening a table.",
       "type": "boolean",
       "default": true
     },
