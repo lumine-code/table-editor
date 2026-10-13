@@ -1,0 +1,16 @@
+{
+  "title": "table-editor",
+  "description": "Explore sampled signal data as a spreadsheet.",
+  "recordedOn": "2026-10-13",
+  "sourceRevision": "c5811b1fff821870c55f6b6daa1b7003e70ef2fa",
+  "mode": "normal",
+  "fontSettings": "default",
+  "images": [
+    {
+      "file": "demo.png",
+      "label": "Explore sampled signal data as a spreadsheet.",
+      "width": 1200,
+      "height": 760
+    }
+  ]
+}

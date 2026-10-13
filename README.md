@@ -16,6 +16,8 @@ Table Editor opens delimited text through a preview where the delimiter, encodin
 - **Safe files**: preserves encoding and delimiters, detects external conflicts, and replaces files atomically.
 - **Reusable models**: exposes the table model, display model, editor model, ranges, and file editor as a service.
 
+![Explore sampled signal data as a spreadsheet.](.github/demo.png)
+
 ## Installation
 
 To install `table-editor` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/table-editor`.
