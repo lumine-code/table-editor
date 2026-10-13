@@ -22,7 +22,11 @@ describe("table-editor package", () => {
   });
 
   it("uses a versioned package state and rejects legacy serialized state", () => {
-    expect(mainModule.serialize()).toEqual({ version: 1, files: {} });
+    expect(mainModule.serialize()).toEqual({
+      version: 1,
+      files: {},
+      tables: {},
+    });
     expect(mainModule.deserializeTable({ columns: [], rows: [] })).toBeNull();
     expect(
       mainModule.deserializeDelimitedTextEditor({

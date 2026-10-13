@@ -343,15 +343,18 @@ describe("delimited text pane item", () => {
     item.editor.setValueAtPosition([1, 0], "dirty");
     const state = item.serialize();
     expect(state.deserializer).toBe("table-editor/DelimitedTextEditor");
-    expect(state.version).toBe(1);
+    expect(state.version).toBe(2);
     expect(state.editor.deserializer).toBe("table-editor/TableEditor");
-    expect(state.editor.displayTable.table.modified).toBe(true);
+    expect(state.editor.displayTable.tableId).toBe(item.editor.table.id);
+    const documents = mainModule.serialize();
+    expect(documents.tables[state.tableId].modified).toBe(true);
     expect(state.metadata.stats).toBeUndefined();
     expect(Array.isArray(state.metadata.bom)).toBe(true);
 
     const pane = lumine.workspace.paneForItem(item);
     pane.removeItem(item, false);
     item.destroy();
+    mainModule.restoreState(documents);
     const restored = mainModule.deserializeDelimitedTextEditor(state);
     await pollUntil(() => restored.editor != null);
     expect(restored.getFileState()).toBe("modified");

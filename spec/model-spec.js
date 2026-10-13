@@ -213,7 +213,7 @@ describe("table-editor models", () => {
     expect(table.serialize().deserializer).toBe("table-editor/Table");
     expect(display.serialize().deserializer).toBe("table-editor/DisplayTable");
     expect(editor.serialize().deserializer).toBe("table-editor/TableEditor");
-    expect(editor.serialize().version).toBe(1);
+    expect(editor.serialize().version).toBe(2);
     editor.destroy();
   });
 });
