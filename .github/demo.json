@@ -1,16 +1,65 @@
 {
   "title": "table-editor",
   "description": "Explore sampled signal data as a spreadsheet.",
-  "recordedOn": "2026-10-13",
-  "sourceRevision": "c5811b1fff821870c55f6b6daa1b7003e70ef2fa",
+  "recordedOn": "2026-10-14",
+  "sourceRevision": "7e524f4529e9bd85235846c7a0929db7179de550",
+  "themeSourceRevision": "7fbd047a87ecf1367c896b19ff270cdc28d319f7",
   "mode": "normal",
   "fontSettings": "default",
+  "scenario": "demo.js",
+  "recipeHash": "68caf40d4523566c930f1a32f741cd9c000e13701faec92c0ad8ff99f684922b",
+  "environment": {
+    "platform": "win32",
+    "arch": "x64",
+    "electron": "44.7.0",
+    "chrome": "152.0.7977.130",
+    "devicePixelRatio": 1,
+    "locale": "en-GB",
+    "fontFamily": "Fira Code, Menlo, DejaVu Sans Mono, Consolas, monospace",
+    "fontSize": 14,
+    "themes": ["one-day-syntax", "one-day-ui"]
+  },
+  "viewport": { "width": 1200, "height": 760 },
+  "cornerRadius": 10,
+  "sources": {
+    "editor": {
+      "revision": "8be8f86075ad93df038610d82b3ac6d99329957d",
+      "dirty": false,
+      "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "package": {
+      "revision": "7e524f4529e9bd85235846c7a0929db7179de550",
+      "dirty": false,
+      "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "table-editor": {
+      "revision": "7e524f4529e9bd85235846c7a0929db7179de550",
+      "dirty": false,
+      "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "one-theme": {
+      "revision": "7fbd047a87ecf1367c896b19ff270cdc28d319f7",
+      "dirty": false,
+      "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "fixtures": [
+    {
+      "file": "data/notes.txt",
+      "sha256": "430bf4209b566ea98a3c188310eac37dc80e3c5ff8fa970670c1bcf1707f94fb"
+    },
+    {
+      "file": "data/samples.csv",
+      "sha256": "2d35e3bb79e7e9086de59900ceef8f1eea104bfc4ad0de99236dba1f341e4719"
+    }
+  ],
   "images": [
     {
       "file": "demo.png",
       "label": "Explore sampled signal data as a spreadsheet.",
       "width": 1200,
-      "height": 760
+      "height": 760,
+      "sha256": "80a7bd7ae2c2b33628818a9106de50d7c382e95098e6cbb56827b1c27f1ae25e"
     }
   ]
 }
