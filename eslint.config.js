@@ -8,7 +8,7 @@ const runtimeModules = ["lumine", "electron"];
 module.exports = [
   js.configs.recommended,
   n.configs["flat/recommended-script"],
-  { ignores: ["node_modules/**", "spec/fixtures/**"] },
+  { ignores: ["node_modules/**", "spec/fixtures/**", "demo/**"] },
   {
     settings: { n: { version: ">=24.0.0" } },
     languageOptions: {
