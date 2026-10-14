@@ -21,9 +21,18 @@ test("keeps delimited documents and IO unloaded when only ordinary files are ope
   try {
     const main = require("../lib/main");
     main.initialize();
+    assert.equal(
+      main.tableEditorViewProvider({ getTitle: () => "Ordinary item" }),
+      undefined,
+    );
     await main.prepareToSerialize();
     assert.deepEqual(main.serialize(), { version: 1, files: {}, tables: {} });
     for (const filename of [
+      "table.js",
+      "history.js",
+      "range.js",
+      "table-editor.js",
+      "csv-layout.js",
       "delimited-document.js",
       "delimited-io.js",
       "delimited-runtime.js",
