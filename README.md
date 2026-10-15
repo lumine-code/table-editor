@@ -74,7 +74,7 @@ Commands available in `table-editor`:
 
 ## Usage
 
-Opening a file as a table shows its parsing preview when enabled. Choose the parsing rules and confirm Open Table Editor; use Open With… in the tree view to open the same file in Text Editor. Saving preserves the selected encoding, byte-order mark, field delimiter, record delimiter, and final-newline policy. The serializer may normalize redundant quoting. Enabling comment removal or empty-record skipping deliberately omits that ignored syntax from the saved file and is called out in the preview.
+Opening a file as a table shows its parsing preview when enabled. Choose the parsing rules and confirm Open Table Editor; use Open… in the tree view to open the same file in Text Editor. Saving preserves the selected encoding, byte-order mark, field delimiter, record delimiter, and final-newline policy. The serializer may normalize redundant quoting. Enabling comment removal or empty-record skipping deliberately omits that ignored syntax from the saved file and is called out in the preview.
 
 Remembered layouts store only customized column widths, alignments, and row heights; unchanged rows and columns add no layout entries to the saved session.
 
