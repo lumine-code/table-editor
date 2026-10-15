@@ -26,10 +26,10 @@
     "cmdorctrl-z": "core:undo",
     "cmdorctrl-shift-z": "core:redo",
     "ctrl-g": "table-editor:go-to-cell",
-    "cmdorctrl-alt-n up": "table-editor:insert-row-before",
-    "cmdorctrl-alt-n down": "table-editor:insert-row-after",
-    "cmdorctrl-alt-n left": "table-editor:insert-column-before",
-    "cmdorctrl-alt-n right": "table-editor:insert-column-after",
+    "cmdorctrl-k n up": "table-editor:insert-row-before",
+    "cmdorctrl-k n down": "table-editor:insert-row-after",
+    "cmdorctrl-k n left": "table-editor:insert-column-before",
+    "cmdorctrl-k n right": "table-editor:insert-column-after",
     "cmdorctrl-alt-backspace up": "table-editor:delete-row",
     "cmdorctrl-alt-backspace down": "table-editor:delete-row",
     "cmdorctrl-alt-backspace left": "table-editor:delete-column",
@@ -40,7 +40,6 @@
     "escape": "core:cancel",
     "tab": "table-editor:move-right-in-selection",
     "shift-tab": "table-editor:move-left-in-selection",
-    "ctrl-enter": "editor:newline",
-    "cmd-enter": "editor:newline"
+    "cmdorctrl-enter": "editor:newline"
   }
 }
