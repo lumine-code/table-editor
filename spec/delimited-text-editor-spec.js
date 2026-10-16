@@ -384,7 +384,7 @@ describe("delimited text pane item", () => {
     expect(state.version).toBe(2);
     expect(state.editor.deserializer).toBe("table-editor/TableEditor");
     expect(state.editor.displayTable.tableId).toBe(item.editor.table.id);
-    const documents = mainModule.serialize();
+    const documents = mainModule.serializeSessionState();
     expect(documents.tables[state.tableId].modified).toBe(true);
     expect(state.metadata.stats).toBeUndefined();
     expect(Array.isArray(state.metadata.bom)).toBe(true);
@@ -392,7 +392,7 @@ describe("delimited text pane item", () => {
     const pane = lumine.workspace.paneForItem(item);
     pane.removeItem(item, false);
     item.destroy();
-    mainModule.restoreState(documents);
+    mainModule.restoreSessionState(documents);
     const restored = mainModule.deserializeDelimitedTextEditor(state);
     await pollUntil(() => restored.editor != null);
     expect(restored.getFileState()).toBe("modified");

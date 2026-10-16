@@ -42,9 +42,9 @@ describe("shared table state snapshots", () => {
       .activateItem(second, { activatePane: true });
     first.setValueAtPosition([0, 0], "changed");
     const state = JSON.parse(JSON.stringify(await lumine.captureState()));
-    expect(Object.keys(state.packageStates["table-editor"].tables).length).toBe(
-      1,
-    );
+    expect(
+      Object.keys(state.documentStates["table-editor"].tables).length,
+    ).toBe(1);
     await lumine.deserialize(state);
     const editors = lumine.workspace
       .getPaneItems()
@@ -83,9 +83,9 @@ describe("shared table state snapshots", () => {
     const oldDocument = first.document;
     first.editor.setValueAtPosition([0, 0], "unsaved");
     const state = JSON.parse(JSON.stringify(await lumine.captureState()));
-    expect(Object.keys(state.packageStates["table-editor"].tables).length).toBe(
-      1,
-    );
+    expect(
+      Object.keys(state.documentStates["table-editor"].tables).length,
+    ).toBe(1);
     await lumine.deserialize(state);
     const views = lumine.workspace
       .getPaneItems()

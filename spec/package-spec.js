@@ -21,11 +21,11 @@ describe("table-editor package", () => {
     expect(api.CSVEditor).toBeUndefined();
   });
 
-  it("uses a versioned package state and rejects legacy serialized state", () => {
-    expect(mainModule.serialize()).toEqual({
+  it("keeps document recovery separate from project preferences and rejects legacy pane state", () => {
+    expect(mainModule.serializeSessionState()).toEqual({ tables: {} });
+    expect(mainModule.filePreferences.serialize()).toEqual({
       version: 1,
       files: {},
-      tables: {},
     });
     expect(mainModule.deserializeTable({ columns: [], rows: [] })).toBeNull();
     expect(
