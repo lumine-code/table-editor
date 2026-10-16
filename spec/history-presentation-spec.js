@@ -85,6 +85,22 @@ describe("Table Editor native history and presentation", () => {
     ).toBe(true);
   });
 
+  for (const kind of ["cell", "column"])
+    it(`cancels a ${kind} edit when its table becomes read-only`, () => {
+      const { table, view } = create();
+      if (kind === "cell") view.startCellEdit();
+      else view.startColumnEdit();
+      const input = view.editorElement;
+      view.editor.setText("uncommitted mutation");
+      view.setAttribute("read-only", "");
+      expect(view.editing).toBe(false);
+      expect(view.contains(input)).toBe(false);
+      if (kind === "cell") view.confirmCellEdit();
+      else view.confirmColumnEdit();
+      expect(table.getRows().flat()).toEqual(["b", "d", "a", "c"]);
+      expect(table.getColumns()).toEqual(["name"]);
+    });
+
   it("does not register file checkout against a cell mini editor", () => {
     const { view } = create();
     view.startCellEdit();
