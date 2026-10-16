@@ -20,13 +20,24 @@ test("keeps delimited documents and IO unloaded when only ordinary files are ope
   };
   try {
     const main = require("../lib/main");
-    main.initialize();
+    main.initialize({
+      workspaceState: {
+        get: (_key, fallback) => fallback,
+        observe(_key, callback) {
+          callback(undefined);
+          return { dispose() {} };
+        },
+      },
+      subscriptions: { add() {} },
+    });
+    main.restoreSessionState({});
     assert.equal(
       main.tableEditorViewProvider({ getTitle: () => "Ordinary item" }),
       undefined,
     );
     await main.prepareToSerialize();
-    assert.deepEqual(main.serialize(), { version: 1, files: {}, tables: {} });
+    assert.deepEqual(main.serializeSessionState(), { tables: {} });
+    assert.equal(main.filePreferences._files, null);
     for (const filename of [
       "table.js",
       "history.js",

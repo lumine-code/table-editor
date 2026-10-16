@@ -1,4 +1,6 @@
 const path = require("node:path");
+const fs = require("node:fs");
+const os = require("node:os");
 const { CompositeDisposable, Disposable } = require("lumine");
 
 describe("Table Editor project preferences", () => {
@@ -11,7 +13,8 @@ describe("Table Editor project preferences", () => {
     subscriptions = new CompositeDisposable();
     storage = {
       get: (key, fallback) => structuredClone(stored[key] ?? fallback),
-      update: jasmine.createSpy("update").and.callFake((key, value) => {
+      mutate: jasmine.createSpy("mutate").and.callFake((key, update) => {
+        const value = update(structuredClone(stored[key]));
         stored[key] = structuredClone(value);
         for (const callback of observers) callback(structuredClone(value));
         return Promise.resolve();
@@ -38,10 +41,8 @@ describe("Table Editor project preferences", () => {
       version: 1,
       files: { [filePath]: { options: { delimiter: ";", header: true } } },
     });
-    expect(storage.update).toHaveBeenCalledWith(
-      "filePreferences",
-      stored.filePreferences,
-    );
+    expect(storage.mutate.calls.mostRecent().args[0]).toBe("filePreferences");
+    expect(typeof storage.mutate.calls.mostRecent().args[1]).toBe("function");
     main.filePreferences.clear(filePath);
     expect(stored.filePreferences).toEqual({ version: 1, files: {} });
   });
@@ -61,5 +62,103 @@ describe("Table Editor project preferences", () => {
       ";",
     );
     expect(stored.filePreferences.files[filePath].options.delimiter).toBe("\t");
+  });
+});
+
+describe("Table Editor durable preference operations", () => {
+  let directory, base, managers, subscriptions, controllers, facades, states;
+
+  beforeEach(async () => {
+    jasmine.useRealClock();
+    base = fs.realpathSync.native(os.tmpdir());
+    directory = fs.mkdtempSync(path.join(base, "table-preference-windows-"));
+    managers = [];
+    subscriptions = [];
+    controllers = [];
+    facades = [];
+    states = [];
+    for (let index = 0; index < 2; index++) {
+      const manager = new lumine.packages.storage.constructor();
+      managers.push(manager);
+      await manager.initialize({
+        configDirPath: directory,
+        projectPaths: ["same-project"],
+        windowStateId: `table-window-${index}`,
+      });
+      const workspaceState = manager.forPackage("table-editor").workspaceState;
+      const owner = new CompositeDisposable();
+      const controller = new AbortController();
+      const facade = { initialize: require("../lib/main").initialize };
+      facade.initialize({
+        workspaceState,
+        subscriptions: owner,
+        signal: controller.signal,
+      });
+      states.push(workspaceState);
+      subscriptions.push(owner);
+      controllers.push(controller);
+      facades.push(facade);
+    }
+  });
+
+  afterEach(async () => {
+    controllers.forEach((controller) => controller.abort());
+    subscriptions.forEach((owner) => owner.dispose());
+    await Promise.all(managers.map((manager) => manager.close()));
+    if (path.dirname(fs.realpathSync.native(directory)) !== base)
+      throw new Error("Preference profile escaped its temporary parent");
+    fs.rmSync(directory, { recursive: true, force: true });
+  });
+
+  async function committed() {
+    await Promise.all(managers.map((manager) => manager.flush()));
+    await flushMicrotasks(4);
+    return states[0].mutate("filePreferences", (value) => value);
+  }
+
+  it("preserves concurrent changes to different files and different properties of one file", async () => {
+    const [a, b] = facades.map((facade) => facade.filePreferences);
+    const first = path.join(directory, "a.csv"),
+      second = path.join(directory, "b.csv");
+    a.set(first, "options", { delimiter: ";" });
+    b.set(second, "options", { delimiter: "\t" });
+    let result = await committed();
+    expect(Object.keys(result.files).sort()).toEqual([first, second].sort());
+    a.set(first, "options", { delimiter: "," });
+    b.set(first, "layout", { columns: { 0: { width: 260 } } });
+    result = await committed();
+    expect(result.files[first]).toEqual({
+      options: { delimiter: "," },
+      layout: { columns: { 0: { width: 260 } } },
+    });
+    expect(facades[0].filePreferences).toBe(a);
+    expect(facades[1].filePreferences).toBe(b);
+  });
+
+  it("applies stale clear and move operations to current stored preferences", async () => {
+    const [a, b] = facades.map((facade) => facade.filePreferences);
+    const first = path.join(directory, "a.csv"),
+      moved = path.join(directory, "moved.csv"),
+      other = path.join(directory, "b.csv");
+    a.set(first, "options", { delimiter: ";" });
+    await committed();
+    b.set(first, "layout", { columns: { 0: { width: 260 } } });
+    await committed();
+    a.clearProperty("options", first);
+    let result = await committed();
+    expect(result.files[first]).toEqual({
+      layout: { columns: { 0: { width: 260 } } },
+    });
+    b.move(first, moved);
+    result = await committed();
+    expect(result.files[first]).toBeUndefined();
+    expect(result.files[moved]).toEqual({
+      layout: { columns: { 0: { width: 260 } } },
+    });
+    a.clear();
+    await committed();
+    b.set(other, "options", { delimiter: "\t" });
+    result = await committed();
+    expect(result.files).toEqual({ [other]: { options: { delimiter: "\t" } } });
   });
 });
