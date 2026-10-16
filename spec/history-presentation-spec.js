@@ -54,6 +54,43 @@ describe("Table Editor native history and presentation", () => {
     expect(table.getRows().flat()).toEqual(["d", "c", "b", "a"]);
   });
 
+  it("does not offer or dispatch mutations on a read-only grid", async () => {
+    const { table, view } = create();
+    view.setAttribute("read-only", "");
+    for (const name of [
+      "table-editor:insert-row-before",
+      "table-editor:delete-column",
+      "table-editor:move-row-down",
+      "table-editor:apply-sort",
+    ]) {
+      expect(lumine.commands.canDispatch(view, name))
+        .withContext(name)
+        .toBe(false);
+      expect(await lumine.commands.dispatch(view, name))
+        .withContext(name)
+        .toBeNull();
+    }
+    expect(table.getRows().length).toBe(4);
+    expect(
+      lumine.commands.canDispatch(view, "table-editor:select-to-end-of-table"),
+    ).toBe(true);
+    view.removeAttribute("read-only");
+    expect(
+      lumine.commands.canDispatch(view, "table-editor:insert-row-before"),
+    ).toBe(true);
+  });
+
+  it("does not register file checkout against a cell mini editor", () => {
+    const { view } = create();
+    view.startCellEdit();
+    expect(
+      lumine.commands.canDispatch(
+        view.editorElement,
+        "editor:checkout-head-revision",
+      ),
+    ).toBe(false);
+  });
+
   it("restores row height overrides when undoing a nonzero model range deletion", () => {
     const { table, editor, view } = create();
     editor.setRowHeightAt(2, 70);
