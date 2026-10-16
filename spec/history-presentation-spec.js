@@ -72,6 +72,11 @@ describe("Table Editor native history and presentation", () => {
     }
     expect(table.getRows().length).toBe(4);
     expect(
+      lumine.keymaps
+        .findKeyBindings({ target: view, command: "core:cut" })
+        .filter((binding) => binding.selector.startsWith("table-editor")),
+    ).toEqual([]);
+    expect(
       lumine.commands.canDispatch(view, "table-editor:select-to-end-of-table"),
     ).toBe(true);
     view.removeAttribute("read-only");
