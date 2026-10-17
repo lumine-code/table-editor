@@ -161,4 +161,57 @@ describe("Table Editor durable preference operations", () => {
     result = await committed();
     expect(result.files).toEqual({ [other]: { options: { delimiter: "\t" } } });
   });
+
+  it("reads the new project's preferences immediately while an outgoing write is pending", async () => {
+    const manager = managers[0];
+    const preferences = facades[0].filePreferences;
+    const filePath = path.join(directory, "shared.csv");
+    await manager.switchProject(["other-project"]);
+    preferences.set(filePath, "options", { delimiter: "\t" });
+    await committed();
+    await manager.switchProject(["same-project"]);
+    preferences.set(filePath, "options", { delimiter: ";" });
+    await committed();
+
+    const update = manager.stateStore.update.bind(manager.stateStore);
+    let releaseWrite, writeStarted;
+    const heldWrite = new Promise((resolve) => (releaseWrite = resolve));
+    const secondWriteStarted = new Promise(
+      (resolve) => (writeStarted = resolve),
+    );
+    let writes = 0;
+    spyOn(manager.stateStore, "update").and.callFake(async (...args) => {
+      if (++writes === 2) {
+        writeStarted();
+        await heldWrite;
+      }
+      return update(...args);
+    });
+    preferences.set(filePath, "layout", { columns: { 0: { width: 260 } } });
+    const switching = manager.switchProject(["other-project"]);
+    expect(preferences.get(filePath, "options")).toEqual({ delimiter: "\t" });
+    expect(preferences.get(filePath, "layout")).toBeUndefined();
+    preferences.set(filePath, "layout", { columns: { 0: { width: 340 } } });
+    try {
+      await switching;
+      await secondWriteStarted;
+      await flushMicrotasks(4);
+      expect(preferences.get(filePath, "options")).toEqual({ delimiter: "\t" });
+      expect(preferences.get(filePath, "layout")).toEqual({
+        columns: { 0: { width: 340 } },
+      });
+    } finally {
+      releaseWrite();
+    }
+    await manager.flush();
+    await flushMicrotasks(4);
+    expect(preferences.get(filePath, "layout")).toEqual({
+      columns: { 0: { width: 340 } },
+    });
+    await manager.switchProject(["same-project"]);
+    expect(preferences.get(filePath, "options")).toEqual({ delimiter: ";" });
+    expect(preferences.get(filePath, "layout")).toEqual({
+      columns: { 0: { width: 260 } },
+    });
+  });
 });
