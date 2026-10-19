@@ -86,6 +86,24 @@ describe("Table Editor native history and presentation", () => {
   });
 
   for (const kind of ["cell", "column"])
+    it(`starts a reused ${kind} editor with empty undo and redo stacks`, () => {
+      const { view } = create();
+      const open = () =>
+        kind === "cell" ? view.startCellEdit() : view.startColumnEdit();
+      open();
+      const text = view.editor.getText();
+      view.editor.setText("discarded input");
+      view.editor.undo();
+      expect(view.editor.getText()).toBe(text);
+      view.stopEdit();
+      open();
+      view.editor.redo();
+      expect(view.editor.getText()).toBe(text);
+      view.editor.undo();
+      expect(view.editor.getText()).toBe(text);
+    });
+
+  for (const kind of ["cell", "column"])
     it(`cancels a ${kind} edit when its table becomes read-only`, () => {
       const { table, view } = create();
       if (kind === "cell") view.startCellEdit();
