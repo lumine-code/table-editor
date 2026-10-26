@@ -323,13 +323,12 @@ describe("Table Editor actual data boundaries", () => {
     const failed = Promise.reject(failure);
     failed.catch(() => {});
     spyOn(lumine.clipboard, "write").and.returnValue(failed);
-    let rejected;
-    try {
-      await lumine.commands.dispatch(view, "core:cut");
-    } catch (error) {
-      rejected = error;
-    }
-    expect(rejected).toBe(failure);
+    const warning = spyOn(lumine.notifications, "addWarning").and.callThrough();
+    await lumine.commands.dispatch(view, "core:cut");
+    expect(warning).toHaveBeenCalledWith("Table clipboard operation failed", {
+      detail: failure.message,
+      dismissable: true,
+    });
     expect(table.getRows()).toEqual([["one", "two"]]);
   });
   it("does not cut a replacement selection after a pending native clipboard write", async () => {

@@ -78,7 +78,9 @@ Opening a file as a table shows its parsing preview when enabled. Choose the par
 
 Remembered layouts store only customized column widths, alignments, and row heights; unchanged rows and columns add no layout entries to the saved session.
 
-Tables up to 50,000 rows are the supported interactive performance target. Larger files are still loaded completely after the configured warning and are never silently truncated, but their memory use and operation latency depend on the document width and cell contents.
+Tables up to 50,000 rows are the supported interactive performance target. The complete grid is held in memory: file loading accepts up to 2,000,000 cells and 64 Mi UTF-16 units of cell text, with 10,000 columns, 1 Mi units per cell and an 8 Mi unit raw-record limit (the CSV parser also limits its record buffers to 8 MiB). Larger inputs are rejected without truncation or modifying the original file; use Open… → Text Editor to work with the complete source. Saving checks the same cell/text budgets and a conservative 16 Mi unit escaped-record budget before atomically replacing the file.
+
+Cell confirmation checks the input size before reading it and retains an oversized draft for correction; column names accept up to 64 Ki UTF-16 units. Clipboard operations accept up to 8 Mi units of complete text and 100,000 copied cells. Pasting validates all blocks and their destination sizes before applying any change, and a rejected copy never deletes cells during Cut. The complete generated paste is limited to 2,000,000 affected cells. Format tokens and encoding names accept up to 64 units. Errors are visible and never apply a shortened result.
 
 ## Customization
 
