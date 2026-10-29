@@ -83,6 +83,32 @@ describe("delimited text pane item", () => {
     return item;
   }
 
+  it("publishes live table dimensions and detected source metadata", async () => {
+    const item = await openTable();
+    const findRow = (id) =>
+      item
+        .getMetadata()
+        .flatMap((section) => section.rows)
+        .find((row) => row.id === id);
+    expect(findRow("rows").value).toBe(2);
+    expect(findRow("columns").value).toBe(2);
+    expect(findRow("delimiter").value).toBe(";");
+    expect(findRow("record-delimiter").value).toBe("CRLF");
+    const changed = jasmine.createSpy("table metadata changed");
+    const lease = item.onDidChangeMetadata(changed);
+    try {
+      item.editor.addRow(["gamma", "3"]);
+      expect(findRow("rows").value).toBe(3);
+      expect(changed).toHaveBeenCalledWith();
+      lease.dispose();
+      changed.calls.reset();
+      item.editor.addRow(["delta", "4"]);
+      expect(changed).not.toHaveBeenCalled();
+    } finally {
+      lease.dispose();
+    }
+  });
+
   it("opens configured extensions and leaves unrelated files to the text editor", async () => {
     const item = await openTable();
     expect(item instanceof DelimitedTextEditor).toBe(true);
