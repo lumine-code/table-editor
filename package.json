@@ -64,7 +64,7 @@
     "tableEditorViewProvider"
   ],
   "dependencies": {
-    "@lumine-code/canvas-grid": "github:lumine-code/canvas-grid#d901afcb71213585a406049c5a635cd4fbbba107",
+    "@lumine-code/canvas-grid": "github:lumine-code/canvas-grid#4a72ecbc485f087a896b57f23ad659a3c4feef57",
     "csv-parse": "^7.0.3",
     "csv-stringify": "^6.9.0",
     "iconv-lite": "^0.7.3"
